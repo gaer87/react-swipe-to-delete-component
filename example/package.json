@@ -2,7 +2,7 @@
   "name": "react-swipe-to-delete-component-example",
   "version": "0.1.0",
   "description": "Example using of react-swipe-to-delete-component.",
-  "main": "example.jsx",
+  "main": "src/js/main.jsx",
   "scripts": {
     "start": "webpack-dev-server --inline --hot",
     "build": "webpack"

@@ -17,7 +17,6 @@ let config = {
     extensions: ['', '.js', '.jsx'],
     alias: {
       'react-swipe-to-delete-component': path.resolve(__dirname, '../src/js/main')
-      // 'react-swipe-to-delete-component': path.resolve(__dirname, '../dist/swipe-to-delete')
     }
   },
 
