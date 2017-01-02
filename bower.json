@@ -1,0 +1,31 @@
+{
+  "name": "swipe-to-delete",
+  "description": "Implement the 'swipe to delete' UI-pattern in the Marionette framework.",
+  "main": "dist/swipe-to-delete.min.js",
+  "authors": [
+    "Fedotov Alexander"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "swipe",
+    "delete",
+    "UI-pattern",
+    "marionette",
+    "backbone",
+    "backbone.marionette"
+  ],
+  "homepage": "https://github.com/gaer87/swipe-to-delete",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gaer87/swipe-to-delete.git"
+  },
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "dependencies": {
+    "backbone.marionette": "^2.4.4",
+    "jquery": "^2.2.1"
+  }
+}

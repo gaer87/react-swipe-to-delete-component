@@ -1,0 +1,70 @@
+/* Required styles */
+.swipe-to-delete {
+  position: relative !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+
+  .js-delete {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
+  }
+  .js-content {
+    position: relative !important;
+    z-index: 2 !important;
+
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+  }
+  .js-content :first-child {
+    position: relative !important;
+  }
+
+  .js-transition-delete-right, .js-transition-delete-left, .js-transition-cancel {
+    transition-property: left !important;
+    transition-duration: .5s;
+  }
+  .js-transition-delete-right {
+    left: 100% !important;
+  }
+  .js-transition-delete-left {
+    left: -100% !important;
+  }
+  .js-transition-cancel {
+    left: 0 !important;
+  }
+}
+
+/* Custom styles */
+.swipe-to-delete {
+  .js-delete {
+    background: #ff5f58;
+
+    $horiz-padding: 17px;
+    svg {
+      position: absolute;
+      left: $horiz-padding;
+      top: 50%;
+      margin-top: -13px;
+      width: 25px;
+      height: 25px;
+    }
+    svg:first-child {
+      left: auto;
+      right: $horiz-padding;
+    }
+  }
+
+  .js-content :first-child {
+    cursor: pointer;
+  }
+
+  .js-transition-delete-right, .js-transition-delete-left, .js-transition-cancel {
+    transition-duration: .7s;
+    transition-timing-function: ease-in-out;
+  }
+}
