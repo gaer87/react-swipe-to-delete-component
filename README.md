@@ -1,16 +1,12 @@
 # React-swipe-to-delete-component
 Implement the 'swipe to delete' UI-pattern in the React library.
 
-
-
 ## Usage
 The React-swipe-to-delete-component wrap your a content component. It's become swiped. If it's swiped more certain percent than the swipe-to-delete-component will remove a component.
 
-
-
 ## Example
 You may see an example [here](http://gaer87.github.io/react-swipe-to-delete-component/example/).
-```
+```js
 import React from 'react';
 import {render} from 'react-dom';
 // Import the react-swipe-to-delete-component
@@ -42,7 +38,6 @@ const app = (
 );
 
 render(app, document.getElementById('root'));
-
 ```
 
 ### Props
@@ -54,22 +49,22 @@ render(app, document.getElementById('root'));
 
 ### Include lib
 #### ES2015
-```
+```js
 import SwipeToDelete from 'react-swipe-to-delete-component';
 ```
 #### CommonJS
-```
+```js
 var SwipeToDelete = require('react-swipe-to-delete-component');
 // SwipeToDeleteView.default
 ```
 #### AMD
-```
+```js
 define(['react-swipe-to-delete-component'], function(SwipeToDeleteView) {
   // SwipeToDeleteView.default
 });
 ```
 #### Global
-```
+```html
 <script src="node_modules/swipe-to-delete/dist/swipe-to-delete.min.js"></script>
 <script>
 // SwipeToDeleteView.default
