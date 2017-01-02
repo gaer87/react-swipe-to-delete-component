@@ -55,19 +55,19 @@ import SwipeToDelete from 'react-swipe-to-delete-component';
 #### CommonJS
 ```js
 var SwipeToDelete = require('react-swipe-to-delete-component');
-// SwipeToDeleteView.default
+// SwipeToDelete.default
 ```
 #### AMD
 ```js
-define(['react-swipe-to-delete-component'], function(SwipeToDeleteView) {
-  // SwipeToDeleteView.default
+define(['react-swipe-to-delete-component'], function(SwipeToDelete) {
+  // SwipeToDelete.default
 });
 ```
 #### Global
 ```html
 <script src="node_modules/swipe-to-delete/dist/swipe-to-delete.min.js"></script>
 <script>
-// SwipeToDeleteView.default
+// SwipeToDelete.default
 </script>
 ```
 
