@@ -31,9 +31,8 @@ const list = data.map(item => (
 ));
 
 const app = (
-    <div className="list-group">
-      {list}
-    </div>
+  <div className="list-group">
+    {list}
   </div>
 );
 
