@@ -1,3 +1,6 @@
-node_modules
 .idea
-!example/node_modules/bootstrap/dist/css/bootstrap.min.css
+/node_modules/
+/example/node_modules/*
+!/example/node_modules/bootstrap/
+/example/node_modules/bootstrap/*
+!/example/node_modules/bootstrap/dist/
