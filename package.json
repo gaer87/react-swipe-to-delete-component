@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Implement the 'swipe to delete' UI-pattern in the React library.",
   "homepage": "https://github.com/gaer87/react-swipe-to-delete-component",
-  "main": "dist/main.js",
+  "main": "dist/swipe-to-delete.min.js",
   "scripts": {
     "start": "gulp"
   },
@@ -18,9 +18,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gaer87/swipe-to-delete.git"
+    "url": "https://github.com/gaer87/react-swipe-to-delete-component"
   },
-  "github": "https://github.com/gaer87/swipe-to-delete",
+  "github": "https://github.com/gaer87/react-swipe-to-delete-component",
   "devDependencies": {
     "babel-core": "^6.6.5",
     "babel-loader": "^6.2.4",
