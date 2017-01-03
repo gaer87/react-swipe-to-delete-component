@@ -75,7 +75,7 @@ define(['react-swipe-to-delete-component'], function(SwipeToDelete) {
 You may set up styles in "swipe-to-delete.css" under the comment "Custom styles". The class *js-content* is content region, *js-delete* is delete region. Classes *js-transition-delete-right* and *js-transition-delete-left* are added on a content component when it's swiped more than "deleteSwipe" options. Class *js-transition-cancel* is added when a content component swiped less than "deleteSwipe" options. Animations are made by CSS3 transition.
 
 ## Downloads
-Swipe-to-delete is available via [npm](https://www.npmjs.com/).
+Swipe-to-delete is available via [npm](https://www.npmjs.com/package/react-swipe-to-delete-component).
 ```
 npm install react-swipe-to-delete-component
 ```
