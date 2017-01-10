@@ -1,5 +1,5 @@
 /*!
- * React-swipe-to-delete-component v0.1.0
+ * React-swipe-to-delete-component v0.1.1
  * Implement the 'swipe to delete' UI-pattern in the React library.
  * https://github.com/gaer87/react-swipe-to-delete-component
 
