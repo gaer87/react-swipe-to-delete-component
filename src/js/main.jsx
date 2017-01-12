@@ -61,6 +61,7 @@ export default class SwipeToDelete extends React.Component {
     let el = $(this.regionContent.firstChild);
 
     this.onInteract = e => {
+      console.info('onInteract');
       this.model.startX = this.device.getPageX(e);
       dfd.resolve();
     };
@@ -71,12 +72,14 @@ export default class SwipeToDelete extends React.Component {
   }
 
   interact() {
+    console.info('interact');
     $(document).on(this.device.getInteractEventName(), this.moveAt);
   }
 
   moveAt(e) {
     let target = $(this.regionContent.firstChild);
     let res = this.device.getPageX(e) - this.model.startX;
+    console.info('moveAt');
 
     target.css({left: res});
   }
