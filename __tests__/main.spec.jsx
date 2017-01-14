@@ -9,24 +9,31 @@ import Device from '../src/js/utils/device';
 
 describe('A SwipeToDelete', () => {
   const device = Device.factory(false);
+  const componentDidMountOrig = SwipeToDelete.prototype.componentDidMount;;
+  const addHandlersOrig = SwipeToDelete.prototype.addHandlers;
+  const moveAtOrig = SwipeToDelete.prototype.moveAt;
+
+  afterEach(() => {
+    // Return original methods after mock
+    SwipeToDelete.prototype.componentDidMount = componentDidMountOrig;
+    SwipeToDelete.prototype.addHandlers = addHandlersOrig;
+    SwipeToDelete.prototype.moveAt = moveAtOrig;
+  });
 
   it('should renders correctly', () => {
-    const componentDidMountOrig = SwipeToDelete.prototype.componentDidMount;
     // In componentDidMount requires a DOM
     SwipeToDelete.prototype.componentDidMount = () => {};
 
-    const component = renderer.create(
-      <SwipeToDelete><div>Content ...</div></SwipeToDelete>
-    );
+    const component = renderer.create(<SwipeToDelete><div>Content ...</div></SwipeToDelete>);
+    const tree = component.toJSON();
 
-    let tree = component.toJSON();
     expect(tree).toMatchSnapshot();
-
-    SwipeToDelete.prototype.componentDidMount = componentDidMountOrig;
   });
 
   it('should add handlers of lifecycle swiping on "componentDidMount"', () => {
-
+    SwipeToDelete.prototype.addHandlers = jest.fn();
+    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+    expect(SwipeToDelete.prototype.addHandlers).toBeCalled();
   });
 
   it('should move a content component', () => {
@@ -101,7 +108,6 @@ describe('A SwipeToDelete', () => {
     });
   });
 });
-
 
 // Simulate a mouse events; can't use TestUtils here because it uses react's event system only,
 // but <SwipeToDelete> attaches event listeners directly to the document.
