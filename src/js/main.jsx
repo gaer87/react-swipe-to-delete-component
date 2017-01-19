@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import React from 'react';
 import Background from './background';
 import Model from './model';
@@ -49,84 +48,79 @@ export default class SwipeToDelete extends React.Component {
 
   addHandlers() {
     this.startInteract()
-      .done(this.interact)
+      .then(this.interact)
       .then(this.stopInteract)
-        .always(this.offInteract)
-        .then(this.endInteract)
-          .fail(this.addHandlers);
+      .then(this.endInteract)
+      .catch(this.addHandlers);
   }
 
   startInteract() {
-    let dfd = new $.Deferred();
-    let el = $(this.regionContent.firstChild);
+    return new Promise(resolve => {
+      this.onInteract = e => {
+        el.removeEventListener(this.device.getStartEventName(), this.onInteract, false);
+        this.model.startX = this.device.getPageX(e);
+        resolve();
+      };
 
-    this.onInteract = e => {
-      console.info('onInteract');
-      this.model.startX = this.device.getPageX(e);
-      dfd.resolve();
-    };
-
-    el.one(this.device.getStartEventName(), this.onInteract);
-
-    return dfd;
+      const el = this.regionContent.firstChild;
+      el.addEventListener(this.device.getStartEventName(), this.onInteract, false);
+    });
   }
 
   interact() {
-    console.info('interact');
-    $(document).on(this.device.getInteractEventName(), this.moveAt);
-  }
-
-  moveAt(e) {
-    let target = $(this.regionContent.firstChild);
-    let res = this.device.getPageX(e) - this.model.startX;
-    console.info('moveAt');
-
-    target.css({left: res});
+    document.addEventListener(this.device.getInteractEventName(), this.moveAt, false);
   }
 
   offInteract() {
-    $(document).off(this.device.getInteractEventName(), this.moveAt);
+    document.removeEventListener(this.device.getInteractEventName(), this.moveAt, false);
+  }
+
+  moveAt(e) {
+    const target = this.regionContent.firstChild;
+    const res = this.device.getPageX(e) - this.model.startX;
+
+    target.style.left = `${res}px`;
   }
 
   stopInteract() {
-    let dfd = new $.Deferred();
-    let el = $(this.regionContent.firstChild);
+    return new Promise((resolve, reject) => {
+      const el = this.regionContent.firstChild;
 
-    this.onStopInteract = e => {
-      this.device.getStopEventNames().forEach(event => el.off(event, this.onStopInteract));
+      this.onStopInteract = e => {
+        this.offInteract();
+        this.device.getStopEventNames().forEach(event => el.removeEventListener(event, this.onStopInteract, false));
 
-      let shift = $(e.currentTarget).position().left;
-      !shift ? dfd.reject(e) : dfd.resolve(e);
-    };
+        const shift = e.currentTarget.offsetLeft;
+        !shift ? reject() : resolve(e);
+      };
 
-    this.device.getStopEventNames().forEach(event => el.one(event, this.onStopInteract));
-
-    return dfd;
+      this.device.getStopEventNames().forEach(event => el.addEventListener(event, this.onStopInteract, false));
+    });
   }
 
   endInteract(event) {
-    let dfd = new $.Deferred();
-    let target = $(event.currentTarget);
-    let swipePercent = this.getSwipePercent();
+    const target = event.currentTarget;
+    const swipePercent = this.getSwipePercent();
 
-    dfd
-      .done(this.onDelete)
-      .fail(this.onCancel);
+    const promise = new Promise((resolve, reject) => {
+      if (this.model.isDelete(swipePercent)) {
+        target.addEventListener('transitionend', e => resolve(e), false);
+        swipePercent < 0 ? target.classList.add('js-transition-delete-left') : target.classList.add('js-transition-delete-right');
+      } else {
+        target.addEventListener('transitionend', e => reject(e), false);
+        target.classList.add('js-transition-cancel');
+      }
+    });
 
-    if (this.model.isDelete(swipePercent)) {
-      target.one('transitionend', e => dfd.resolve(e));
-      swipePercent < 0 ? target.addClass('js-transition-delete-left') : target.addClass('js-transition-delete-right');
-    } else {
-      target.one('transitionend', e => dfd.reject(e));
-      target.addClass('js-transition-cancel');
-    }
+    promise
+      .then(this.onDelete, this.onCancel);
 
-    return dfd;
+    return promise;
   }
 
   getSwipePercent() {
-    let shift = $(this.regionContent.firstChild).position().left;
-    let width = $(this.regionContent).innerWidth();
+    const shift = this.regionContent.firstChild.offsetLeft;
+    const width = this.regionContent.clientWidth;
 
     return this.model.calcSwipePercent({shift, width});
   }
@@ -139,11 +133,10 @@ export default class SwipeToDelete extends React.Component {
   onCancel(e) {
     this.props.onCancel();
 
-    let target = $(e.currentTarget);
-    target.removeClass('js-transition-cancel');
-    target.css({left: 0});
+    const target = e.currentTarget;
+    target.classList.remove('js-transition-cancel');
 
-    this.model.startX = 0;
+    this.model.startX = target.style.left = 0;
   }
 }
 
