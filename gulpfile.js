@@ -1,9 +1,7 @@
 var gulp = require('gulp');
 var uglify = require('gulp-uglify');
-var gutil = require('gulp-util');
 var path = require('path');
 var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
 var stream = require('webpack-stream');
 var webpackConfig = require('./webpack.config.js');
 var del = require('del');
@@ -13,8 +11,7 @@ var replace = require('gulp-replace');
 
 const paths = {
   src: 'src',
-  dist: 'dist',
-  example: 'example'
+  dist: 'dist'
 };
 
 gulp.task('clean', function () {
@@ -51,37 +48,11 @@ gulp.task('banner', ['minify:js'], function () {
     .pipe(gulp.dest(paths.dist));
 });
 
-// gulp.task('update:example', ['banner'], function () {
-//   return gulp.src(`${paths.dist}/*`)
-//     .pipe(gulp.dest(paths.example));
-// });
-
-/*
-gulp.task('webpack-dev-server', function (callback) {
-  var myConfig = Object.create(webpackConfig);
-  myConfig.devtool = '#inline-source-map';
-  myConfig.entry.example.unshift('webpack-dev-server/client?http://localhost:8080/'); // @see https://webpack.github.io/docs/webpack-dev-server.html#inline-mode-with-node-js-api
-
-  new WebpackDevServer(webpack(myConfig), {
-    contentBase: path.resolve(__dirname, 'example'),
-    stats: {
-      colors: true
-    }
-  }).listen(8080, 'localhost', function (err) {
-    if (err) throw new gutil.PluginError('webpack-dev-server', err);
-    gutil.log('[webpack-dev-server]', 'http://localhost:8080/webpack-dev-server/index.html');
-  });
-});
-*/
-
-
 gulp.task('build', [
   'clean',
   'webpack',
   'minify:js',
-  'banner',
-  // 'update:example'
+  'banner'
 ]);
 
-// gulp.task('default', ['webpack-dev-server']);
 gulp.task('default', ['build']);

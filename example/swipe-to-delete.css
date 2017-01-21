@@ -48,3 +48,5 @@
 .swipe-to-delete .js-transition-delete-right, .swipe-to-delete .js-transition-delete-left, .swipe-to-delete .js-transition-cancel {
 	transition-duration: .7s;
 	transition-timing-function: ease-in-out; }
+
+/*# sourceMappingURL=swipe-to-delete.css.map*/

@@ -9,7 +9,8 @@ let config = {
   },
 
   output: {
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    path: __dirname,
   },
 
   resolve: {
@@ -19,6 +20,10 @@ let config = {
       'react-swipe-to-delete-component': path.resolve(__dirname, '../src/js/main')
     }
   },
+
+  debug: true,
+
+  devtool: 'source-map',
 
   module: {
     loaders: [
@@ -36,7 +41,20 @@ let config = {
 
   plugins: [
     new ExtractTextPlugin('swipe-to-delete.css')
-  ]
+  ],
+
+  devServer: {
+    colors: true,
+    contentBase: __dirname,
+    historyApiFallback: true,
+    // hot: true,
+    inline: true,
+    port: 8080,
+    progress: true,
+    stats: {
+      cached: false,
+    }
+  }
 };
 
 module.exports = config;
