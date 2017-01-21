@@ -1,5 +1,5 @@
 # React-swipe-to-delete-component
-Implement the 'swipe to delete' UI-pattern in the React library.
+A simple React component implement 'swipe to delete' UI-pattern.
 
 ## Usage
 The React-swipe-to-delete-component wrap your a content component. It's become swiped. If it's swiped more certain percent than the swipe-to-delete-component will remove a component.
