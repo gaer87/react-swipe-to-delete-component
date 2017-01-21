@@ -80,6 +80,10 @@ npm install react-swipe-to-delete-component
 ```
 Else you can download the latest builds directly from the "dist" folder above.
 
+## Changes
+
+See the [CHANGELOG](CHANGELOG.md).
+
 ## Contributing
 From opening a bug report to creating a pull request: every contribution is appreciated and welcome. If you're planing to implement a new feature or change the api please create an issue first.
 
