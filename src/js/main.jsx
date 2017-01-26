@@ -47,7 +47,7 @@ export default class SwipeToDelete extends React.Component {
   }
 
   addHandlers() {
-    this.startInteract()
+    this.step = this.startInteract()
       .then(this.interact)
       .then(this.stopInteract)
       .then(this.endInteract)
@@ -86,20 +86,24 @@ export default class SwipeToDelete extends React.Component {
     return new Promise((resolve, reject) => {
       const el = this.regionContent.firstChild;
 
-      this.onStopInteract = e => {
-        this.offInteract();
-        this.device.getStopEventNames().forEach(event => el.removeEventListener(event, this.onStopInteract, false));
+      this._onStopInteract = e => this.onStopInteract(e, resolve, reject);
 
-        const shift = e.currentTarget.offsetLeft;
-        !shift ? reject() : resolve(e);
-      };
-
-      this.device.getStopEventNames().forEach(event => el.addEventListener(event, this.onStopInteract, false));
+      this.device.getStopEventNames().forEach(eventName => el.addEventListener(eventName, this._onStopInteract, false));
     });
   }
 
-  endInteract(event) {
-    const target = event.currentTarget;
+  onStopInteract(e, resolve, reject) {
+    const el = this.regionContent.firstChild;
+
+    this.offInteract();
+    this.device.getStopEventNames().forEach(eventName => el.removeEventListener(eventName, this._onStopInteract, false));
+
+    const shift = e.currentTarget.offsetLeft;
+    !shift ? reject() : resolve();
+  }
+
+  endInteract() {
+    const target = this.regionContent.firstChild;
     const swipePercent = this.getSwipePercent();
 
     const promise = new Promise((resolve, reject) => {

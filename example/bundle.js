@@ -21672,7 +21672,7 @@
 	  }, {
 	    key: 'addHandlers',
 	    value: function addHandlers() {
-	      this.startInteract().then(this.interact).then(this.stopInteract).then(this.endInteract).catch(this.addHandlers);
+	      this.step = this.startInteract().then(this.interact).then(this.stopInteract).then(this.endInteract).catch(this.addHandlers);
 	    }
 	  }, {
 	    key: 'startInteract',
@@ -21716,31 +21716,40 @@
 	      return new _promise2.default(function (resolve, reject) {
 	        var el = _this4.regionContent.firstChild;
 	
-	        _this4.onStopInteract = function (e) {
-	          _this4.offInteract();
-	          _this4.device.getStopEventNames().forEach(function (event) {
-	            return el.removeEventListener(event, _this4.onStopInteract, false);
-	          });
-	
-	          var shift = e.currentTarget.offsetLeft;
-	          !shift ? reject() : resolve(e);
+	        _this4._onStopInteract = function (e) {
+	          return _this4.onStopInteract(e, resolve, reject);
 	        };
 	
-	        _this4.device.getStopEventNames().forEach(function (event) {
-	          return el.addEventListener(event, _this4.onStopInteract, false);
+	        _this4.device.getStopEventNames().forEach(function (eventName) {
+	          return el.addEventListener(eventName, _this4._onStopInteract, false);
 	        });
 	      });
 	    }
 	  }, {
-	    key: 'endInteract',
-	    value: function endInteract(event) {
+	    key: 'onStopInteract',
+	    value: function onStopInteract(e, resolve, reject) {
 	      var _this5 = this;
 	
-	      var target = event.currentTarget;
+	      var el = this.regionContent.firstChild;
+	
+	      this.offInteract();
+	      this.device.getStopEventNames().forEach(function (eventName) {
+	        return el.removeEventListener(eventName, _this5._onStopInteract, false);
+	      });
+	
+	      var shift = e.currentTarget.offsetLeft;
+	      !shift ? reject() : resolve();
+	    }
+	  }, {
+	    key: 'endInteract',
+	    value: function endInteract() {
+	      var _this6 = this;
+	
+	      var target = this.regionContent.firstChild;
 	      var swipePercent = this.getSwipePercent();
 	
 	      var promise = new _promise2.default(function (resolve, reject) {
-	        if (_this5.model.isDelete(swipePercent)) {
+	        if (_this6.model.isDelete(swipePercent)) {
 	          target.addEventListener('transitionend', function (e) {
 	            return resolve(e);
 	          }, false);
