@@ -116,8 +116,12 @@ describe('A SwipeToDelete', () => {
     beforeEach(() => {
       Model.prototype.calcSwipePercent = jest.fn().mockReturnValueOnce(-.3);
       SwipeToDelete.prototype.addHandlers = jest.fn(function() {
-        addHandlersOrig.call(this);
-      });
+        // Second calls - stop executing
+      })
+        .mockImplementationOnce(function () {
+          // First call - exec
+          addHandlersOrig.call(this);
+        });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.onCancel = jest.fn();
@@ -168,8 +172,12 @@ describe('A SwipeToDelete', () => {
     beforeEach(() => {
       Model.prototype.calcSwipePercent = jest.fn().mockReturnValueOnce(0);
       SwipeToDelete.prototype.addHandlers = jest.fn(function() {
-        addHandlersOrig.call(this);
-      });
+        // Second calls - stop executing
+      })
+        .mockImplementationOnce(function () {
+          // First call - exec
+          addHandlersOrig.call(this);
+        });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.reject());
       SwipeToDelete.prototype.endInteract = jest.fn();
@@ -233,6 +241,13 @@ describe('A SwipeToDelete', () => {
     beforeEach(() => {
       onCancel = jest.fn();
 
+      SwipeToDelete.prototype.addHandlers = jest.fn(function() {
+        // Second calls - stop executing
+      })
+        .mockImplementationOnce(function () {
+          // First call - exec
+          addHandlersOrig.call(this);
+        });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.endInteract = jest.fn(function() {
