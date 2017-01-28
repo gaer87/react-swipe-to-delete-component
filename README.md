@@ -1,4 +1,4 @@
-# React-swipe-to-delete-component ![Build Status](https://travis-ci.org/gaer87/react-swipe-to-delete-component.svg?branch=develop) 
+# React-swipe-to-delete-component ![Build Status](https://travis-ci.org/gaer87/react-swipe-to-delete-component.svg?branch=master) 
 
 A simple React component implement 'swipe to delete' UI-pattern.
 
