@@ -9,6 +9,7 @@
     "example": "webpack-dev-server --config ./example/webpack.config.js",
     "example:dist": "webpack --config ./example/webpack.config.js",
     "test": "jest --watch",
+    "test:single": "jest",
     "test:coverage": "jest --coverage"
   },
   "keywords": [
