@@ -10,8 +10,10 @@ describe('A SwipeToDelete', () => {
   const device = Device.factory(false);
   const componentDidMountOrig = SwipeToDelete.prototype.componentDidMount;
   const addHandlersOrig = SwipeToDelete.prototype.addHandlers;
+  const startInteractOrig = SwipeToDelete.prototype.startInteract;
   const moveAtOrig = SwipeToDelete.prototype.moveAt;
   const stopInteractOrig = SwipeToDelete.prototype.stopInteract;
+  const onStopInteractOrig = SwipeToDelete.prototype.onStopInteract;
   const endInteractOrig = SwipeToDelete.prototype.endInteract;
   const onDeleteOrig = SwipeToDelete.prototype.onDelete;
   const onCancelOrig = SwipeToDelete.prototype.onCancel;
@@ -19,9 +21,11 @@ describe('A SwipeToDelete', () => {
   afterEach(() => {
     // Return original methods after mock
     SwipeToDelete.prototype.componentDidMount = componentDidMountOrig;
+    SwipeToDelete.prototype.startInteract = startInteractOrig;
     SwipeToDelete.prototype.addHandlers = addHandlersOrig;
     SwipeToDelete.prototype.moveAt = moveAtOrig;
     SwipeToDelete.prototype.stopInteract = stopInteractOrig;
+    SwipeToDelete.prototype.onStopInteract = onStopInteractOrig;
     SwipeToDelete.prototype.endInteract = endInteractOrig;
     SwipeToDelete.prototype.onDelete = onDeleteOrig;
     SwipeToDelete.prototype.onCancel = onCancelOrig;
@@ -56,6 +60,17 @@ describe('A SwipeToDelete', () => {
       });
   });
 
+  it('A "moveAt()" should set "left" style on a content component', () => {
+    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+    const content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
+
+    const pageX = 5;
+    const e = {pageX};
+
+    component.moveAt(e);
+    expect(content.style.left).toBe(`${pageX}px`);
+  });
+
   it('should call "onStopInteract()" when user stop interacting', () => {
     SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
     SwipeToDelete.prototype.onStopInteract = jest.fn();
@@ -73,6 +88,17 @@ describe('A SwipeToDelete', () => {
       });
   });
 
+  it('A "onStopInteract()" should stop executing, when content will be not moved', () => {
+    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+
+    const e = {currentTarget: {offsetLeft: 0}};
+    const resolve = () => {};
+    const reject = jest.fn();
+
+    expect(reject).not.toHaveBeenCalled();
+    component.onStopInteract(e, resolve, reject);
+    expect(reject).toHaveBeenCalled();
+  });
 
   describe('A content component is moved more "deleteSwipe" props', () => {
     let component;
@@ -253,11 +279,12 @@ describe('A SwipeToDelete', () => {
       SwipeToDelete.prototype.endInteract = jest.fn(function() {
         return Promise.reject()
           .catch(() => {
-            this.onCancel();
+            const e = {currentTarget: this.regionContent.firstChild};
+            this.onCancel(e);
           });
       });
 
-      component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onCancel={onCancel}><div className="content">Content ...</div></SwipeToDelete>);
+      component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onCancel={onCancel}><div className="content js-transition-cancel">Content ...</div></SwipeToDelete>);
 
       const waitExec = new Promise((resolve) => {setTimeout(resolve, 4)});
       return waitExec;
