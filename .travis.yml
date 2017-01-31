@@ -10,4 +10,11 @@ script:
   - npm run test:coverage
 
 after_script:
-  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js # Send coverage data to Coveralls
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+
+deploy:
+  provider: npm
+  api_key:
+    secure: Pc3s/YmViWH+6eL7UD9VL1Qmip1fNst+DudyJn6frS96sX4i0Rd+LozOX62jLWtX8MWydgSZfsBdUaF2Jd8gkCI2sXxS2VCiRAGt4u4Lfoi4v5ykvDV9cT1NEer2FqKuY1++oBbj95MEeyR9+Ezer8O7Sq7nCjqWK2aj8ULyO8ENHmYJllrQ5TZ2O+wonk9OT3viowZ3ZALD5bnfzt6oob9SzxAwCJlaWw29mxnpE9v34JW78YxC397o75/I8JImfOwMZo4LA5lufOE0LoQf2QBOX+GeZlo5Hk3y9iS+G8hcBITdwGulm2ISZnvOVKfDRTZA4BaXSWxdu6aCCutQiCdrmtiqkHtiQpUxbWSLoI+0MIRm0DCpmFzhr4wmDZQQIa57Mply+G2PjixC3c1dSZnSEMfuoRes2MD+KQkz39uQh/sg8nti2rHhvfgpwYPPsjisxRXhAv2tNgMRQ4J7QRXVz1yjwKnB3wQpjdeLI+Rlzk6PNvfO8M87+FH6e6CjiYaWFIKXYmxVBlwEEhcyFb8jTXn5rwDGsyz949XZCbDC8JJn6QqbhhlzA8WG/vliM0B9r5P8yszyOwy11Pj/o1fviST3uFi48mYHGvUM15fQFGVOlnOfU8AAabfb+zf7UrLfhLiHVJQngpzpy8HVafeMtY6ZXvxtgsTkCgnsi4M=
+   on:
+    tags: true
