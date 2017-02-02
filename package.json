@@ -13,11 +13,16 @@
     "lint": "eslint ./src/js/* ./__tests__/*"
   },
   "keywords": [
-    "swipe",
-    "delete",
-    "UI-pattern",
+    "animation",
+    "mobile",
     "react",
-    "react-component"
+    "react-component",
+    "swipe",
+    "swipe-to-delete",
+    "touch",
+    "touch-devices",
+    "touch-interface",
+    "ui-pattern"
   ],
   "author": "Fedotov Alexander",
   "license": "MIT",
