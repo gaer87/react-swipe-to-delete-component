@@ -192,9 +192,6 @@ describe('A SwipeToDelete', () => {
 
 
   describe('A content component isn\'t moved', () => {
-    let component;
-    let content;
-
     beforeEach(() => {
       Model.prototype.calcSwipePercent = jest.fn().mockReturnValueOnce(0);
       SwipeToDelete.prototype.addHandlers = jest.fn(function() {
@@ -208,8 +205,7 @@ describe('A SwipeToDelete', () => {
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.reject());
       SwipeToDelete.prototype.endInteract = jest.fn();
 
-      component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
-      content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
+      ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
 
       const waitStopInteractExec = new Promise((resolve) => {setTimeout(resolve, 4)});
       return waitStopInteractExec;

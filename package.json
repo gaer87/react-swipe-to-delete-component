@@ -9,7 +9,8 @@
     "example": "webpack-dev-server --config ./example/webpack.config.js",
     "example:dist": "webpack --config ./example/webpack.config.js",
     "test": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint ./src/js/* ./__tests__/*"
   },
   "keywords": [
     "swipe",
@@ -35,6 +36,8 @@
     "coveralls": "^2.11.15",
     "css-loader": "^0.23.1",
     "del": "^2.2.0",
+    "eslint": "^3.14.1",
+    "eslint-plugin-react": "^6.9.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
