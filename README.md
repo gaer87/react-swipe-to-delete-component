@@ -8,7 +8,7 @@ A simple React component implement 'swipe to delete' UI-pattern.
 ## Install
 Swipe-to-delete is available via [npm](https://www.npmjs.com/package/react-swipe-to-delete-component).
 ```
-npm install react-swipe-to-delete-component --save
+npm install --save react-swipe-to-delete-component
 ```
 Else you can download the latest builds directly from the "dist" folder above.
 
