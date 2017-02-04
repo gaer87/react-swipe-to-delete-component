@@ -149,22 +149,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return null;
 	      }
 
-	      return _react2.default.createElement(
+	      return _react2.default.createElement(this.props.tag, { className: 'swipe-to-delete ' + this.props.classNameTag }, [_react2.default.createElement(
 	        'div',
-	        { className: 'swipe-to-delete' },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'js-delete' },
-	          this.props.background
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'js-content', ref: function ref(el) {
-	              return _this2.regionContent = el;
-	            } },
-	          this.props.children
-	        )
-	      );
+	        { key: 'delete', className: 'js-delete' },
+	        this.props.background
+	      ), _react2.default.createElement(
+	        'div',
+	        { key: 'content', className: 'js-content', ref: function ref(el) {
+	            return _this2.regionContent = el;
+	          } },
+	        this.props.children
+	      )]);
 	    }
 	  }, {
 	    key: 'componentDidMount',
@@ -312,6 +307,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	SwipeToDelete.defaultProps = {
+	  tag: 'div',
+	  classNameTag: '',
 	  background: _react2.default.createElement(_background2.default, null),
 	  onDelete: function onDelete() {},
 	  onCancel: function onCancel() {}
@@ -322,6 +319,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  background: _react2.default.PropTypes.element,
 	  onDelete: _react2.default.PropTypes.func,
 	  onCancel: _react2.default.PropTypes.func,
+	  tag: _react2.default.PropTypes.string,
+	  classNameTag: _react2.default.PropTypes.string,
 	  deleteSwipe: function deleteSwipe(props, propName, componentName) {
 	    var val = props[propName];
 
@@ -330,11 +329,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (typeof val !== 'number') {
-	      return new Error('Invalid prop "deleteWidth" in ' + componentName + ': can be number only.');
+	      return new Error('Invalid prop "deleteSwipe" in ' + componentName + ': can be number only.');
 	    }
 
 	    if (val < 0 || val > 1) {
-	      return new Error('Invalid prop "deleteWidth" in ' + componentName + ': can be in range [0, 1].');
+	      return new Error('Invalid prop "deleteSwipe" in ' + componentName + ': can be in range [0, 1].');
 	    }
 	  }
 	};
@@ -2566,7 +2565,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var Background = function Background(props) {
+	var Background = function Background() {
 	  var icon = _react2.default.createElement(
 	    "svg",
 	    { x: "0px", y: "0px", width: "512px", height: "512px", viewBox: "0 0 900.5 900.5" },
