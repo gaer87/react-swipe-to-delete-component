@@ -5,18 +5,26 @@
 
 A simple React component implement 'swipe to delete' UI-pattern.
 
+## Install
+Swipe-to-delete is available via [npm](https://www.npmjs.com/package/react-swipe-to-delete-component).
+```
+npm install react-swipe-to-delete-component --save
+```
+Else you can download the latest builds directly from the "dist" folder above.
+
 ## Usage
 The React-swipe-to-delete-component wrap your a content component. It's become swiped. If it's swiped more certain percent than the swipe-to-delete-component will remove a component.
 
-## Example
+### Example
 You may see an example [here](http://gaer87.github.io/react-swipe-to-delete-component/example/).
 ```js
 import React from 'react';
 import {render} from 'react-dom';
 // Import the react-swipe-to-delete-component
 import SwipeToDelete from 'react-swipe-to-delete-component';
+// CommonJS
+// var SwipeToDelete = require('react-swipe-to-delete-component').default;
 
-// Example data
 const data = [
   {id: 1, text: 'Best part of the day ☕', date: '5.03.2016'},
   {id: 2, text: 'What\'s everybody reading?', date: '3.03.2016'},
@@ -24,9 +32,7 @@ const data = [
 ];
 
 const list = data.map(item => (
-  // Wrap a content component in the react-swipe-to-delete-component
   <SwipeToDelete key={item.id}>
-    {/* An example content component */}
     <a className="list-group-item">
       <h4 className="list-group-item-heading">{item.date}</h4>
       <p className="list-group-item-text">{item.text}</p>
@@ -50,42 +56,10 @@ render(app, document.getElementById('root'));
 - **onDelete** - This is a function. If a content component is deleted then It will be called. *Optional*.
 - **onCancel** - This is a function. If a content component isn't deleted then It will be called. *Optional*.
 
-### Include lib
-#### ES2015
-```js
-import SwipeToDelete from 'react-swipe-to-delete-component';
-```
-#### CommonJS
-```js
-var SwipeToDelete = require('react-swipe-to-delete-component');
-// SwipeToDelete.default
-```
-#### AMD
-```js
-define(['react-swipe-to-delete-component'], function(SwipeToDelete) {
-  // SwipeToDelete.default
-});
-```
-#### Global
-```html
-<script src="node_modules/swipe-to-delete/dist/swipe-to-delete.min.js"></script>
-<script>
-// SwipeToDelete.default
-</script>
-```
-
 ### Styles
 You may set up styles in "swipe-to-delete.css" under the comment "Custom styles". The class *js-content* is content region, *js-delete* is delete region. Classes *js-transition-delete-right* and *js-transition-delete-left* are added on a content component when it's swiped more than "deleteSwipe" options. Class *js-transition-cancel* is added when a content component swiped less than "deleteSwipe" options. Animations are made by CSS3 transition.
 
-## Downloads
-Swipe-to-delete is available via [npm](https://www.npmjs.com/package/react-swipe-to-delete-component).
-```
-npm install react-swipe-to-delete-component
-```
-Else you can download the latest builds directly from the "dist" folder above.
-
 ## Changes
-
 See the [CHANGELOG](CHANGELOG.md).
 
 ## Contributing
