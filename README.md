@@ -50,7 +50,8 @@ render(app, document.getElementById('root'));
 ```
 
 ### Props
-- **children** - This must be your a component. *Required*.
+- **tag** - This is tag name of a root element. By default, it's "div". *Optional*.
+- **classNameTag** - This is classes of a root element. *Optional*.
 - **background** - This is a decoration component under a content component. By default, showed red element with trash icons. *Optional*.
 - **deleteSwipe** - This is a number. If a content component is swiped more this the number than a swipe-to-delete component will start a delete animation. By default, it's equal "0.5". *Optional*.
 - **onDelete** - This is a function. If a content component is deleted then It will be called. *Optional*.
