@@ -1,6 +1,6 @@
 exports[`A SwipeToDelete should renders correctly 1`] = `
-<div
-  className="swipe-to-delete">
+<li
+  className="swipe-to-delete list children">
   <div
     className="js-delete">
     <div>
@@ -72,5 +72,5 @@ exports[`A SwipeToDelete should renders correctly 1`] = `
       Content ...
     </div>
   </div>
-</div>
+</li>
 `;

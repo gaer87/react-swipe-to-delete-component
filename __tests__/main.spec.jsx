@@ -35,7 +35,7 @@ describe('A SwipeToDelete', () => {
     // In componentDidMount requires a DOM
     SwipeToDelete.prototype.componentDidMount = () => {};
 
-    const component = renderer.create(<SwipeToDelete><div>Content ...</div></SwipeToDelete>);
+    const component = renderer.create(<SwipeToDelete tag={'li'} classNameTag={'list children'}><div>Content ...</div></SwipeToDelete>);
     const tree = component.toJSON();
 
     expect(tree).toMatchSnapshot();

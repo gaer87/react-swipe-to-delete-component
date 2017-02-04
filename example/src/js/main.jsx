@@ -3,20 +3,19 @@ import {render} from 'react-dom';
 // Import the react-swipe-to-delete-component
 import SwipeToDelete from 'react-swipe-to-delete-component';
 
-// Example data
 const data = [
-  {id: 1, text: 'Best part of the day ☕', date: '5.03.2016'},
+  {id: 5, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2017'},
+  {id: 4, text: 'Somewhere in the middle 📸', date: '23.01.2017'},
+  {id: 3, text: 'Best part of the day ☕', date: '5.03.2016'},
   {id: 2, text: 'What\'s everybody reading?', date: '3.03.2016'},
-  {id: 3, text: 'End of summer reading list', date: '1.03.2016'}
+  {id: 1, text: 'End of summer reading list', date: '1.03.2016'}
 ];
 
 const onDelete = () => console.info('onDelete');
 const onCancel = () => console.info('onCancel');
 
 const list = data.map(item => (
-  // Wrap a content component in the react-swipe-to-delete-component
-  <SwipeToDelete key={item.id} onDelete={onDelete} onCancel={onCancel}>
-    {/* An example content component */}
+  <SwipeToDelete key={item.id} tag="li" classNameTag="tw feed" onDelete={onDelete} onCancel={onCancel}>
     <a className="list-group-item">
       <h4 className="list-group-item-heading">{item.date}</h4>
       <p className="list-group-item-text">{item.text}</p>
@@ -30,9 +29,9 @@ const app = (
       <h1 className="panel-title">Messages</h1>
     </div>
     <div className="panel-body text-info">Swipe a row and it is deleted.</div>
-    <div className="list-group">
+    <ul className="list-group list-unstyled">
       {list}
-    </div>
+    </ul>
   </div>
 );
 

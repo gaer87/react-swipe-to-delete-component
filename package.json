@@ -6,7 +6,7 @@
   "main": "dist/swipe-to-delete.min.js",
   "scripts": {
     "start": "gulp",
-    "example": "webpack-dev-server --config ./example/webpack.config.js",
+    "dev": "webpack-dev-server --config ./example/webpack.config.js",
     "example:dist": "webpack --config ./example/webpack.config.js",
     "test": "jest --watch",
     "test:coverage": "jest --coverage",

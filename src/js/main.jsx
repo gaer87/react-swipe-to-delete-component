@@ -23,11 +23,13 @@ export default class SwipeToDelete extends React.Component {
       return null;
     }
 
-    return (
-      <div className="swipe-to-delete">
-        <div className="js-delete">{this.props.background}</div>
-        <div className="js-content" ref={el => this.regionContent = el}>{this.props.children}</div>
-      </div>
+    return React.createElement(
+      this.props.tag,
+      {className: `swipe-to-delete ${this.props.classNameTag}`},
+      [
+        <div key="delete" className="js-delete">{this.props.background}</div>,
+        <div key="content" className="js-content" ref={el => this.regionContent = el}>{this.props.children}</div>
+      ]
     );
   }
 
@@ -145,6 +147,8 @@ export default class SwipeToDelete extends React.Component {
 }
 
 SwipeToDelete.defaultProps = {
+  tag: 'div',
+  classNameTag: '',
   background: <Background/>,
   onDelete: () => {},
   onCancel: () => {}
@@ -155,6 +159,8 @@ SwipeToDelete.propTypes = {
   background: React.PropTypes.element,
   onDelete: React.PropTypes.func,
   onCancel: React.PropTypes.func,
+  tag: React.PropTypes.string,
+  classNameTag: React.PropTypes.string,
   deleteSwipe: (props, propName, componentName) => {
     let val = props[propName];
 
