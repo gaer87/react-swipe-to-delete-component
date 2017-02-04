@@ -65,8 +65,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	// Example data
-	var data = [{ id: 1, text: 'Best part of the day ☕', date: '5.03.2016' }, { id: 2, text: 'What\'s everybody reading?', date: '3.03.2016' }, { id: 3, text: 'End of summer reading list', date: '1.03.2016' }];
+	var data = [{ id: 5, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2017' }, { id: 4, text: 'Somewhere in the middle 📸', date: '23.01.2017' }, { id: 3, text: 'Best part of the day ☕', date: '5.03.2016' }, { id: 2, text: 'What\'s everybody reading?', date: '3.03.2016' }, { id: 1, text: 'End of summer reading list', date: '1.03.2016' }];
 	// Import the react-swipe-to-delete-component
 	
 	
@@ -80,7 +79,7 @@
 	var list = data.map(function (item) {
 	  return _react2.default.createElement(
 	    _reactSwipeToDeleteComponent2.default,
-	    { key: item.id, onDelete: onDelete, onCancel: onCancel },
+	    { key: item.id, tag: 'li', classNameTag: 'tw feed', onDelete: onDelete, onCancel: onCancel },
 	    _react2.default.createElement(
 	      'a',
 	      { className: 'list-group-item' },
@@ -116,8 +115,8 @@
 	    'Swipe a row and it is deleted.'
 	  ),
 	  _react2.default.createElement(
-	    'div',
-	    { className: 'list-group' },
+	    'ul',
+	    { className: 'list-group list-unstyled' },
 	    list
 	  )
 	);
@@ -417,8 +416,15 @@
 /* 5 */
 /***/ function(module, exports) {
 
+	/*
+	object-assign
+	(c) Sindre Sorhus
+	@license MIT
+	*/
+	
 	'use strict';
 	/* eslint-disable no-unused-vars */
+	var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
 	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 	
@@ -439,7 +445,7 @@
 			// Detect buggy property enumeration order in older V8 versions.
 	
 			// https://bugs.chromium.org/p/v8/issues/detail?id=4118
-			var test1 = new String('abc');  // eslint-disable-line
+			var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
 			test1[5] = 'de';
 			if (Object.getOwnPropertyNames(test1)[0] === '5') {
 				return false;
@@ -468,7 +474,7 @@
 			}
 	
 			return true;
-		} catch (e) {
+		} catch (err) {
 			// We don't expect any of the above to throw, but better to be safe.
 			return false;
 		}
@@ -488,8 +494,8 @@
 				}
 			}
 	
-			if (Object.getOwnPropertySymbols) {
-				symbols = Object.getOwnPropertySymbols(from);
+			if (getOwnPropertySymbols) {
+				symbols = getOwnPropertySymbols(from);
 				for (var i = 0; i < symbols.length; i++) {
 					if (propIsEnumerable.call(from, symbols[i])) {
 						to[symbols[i]] = from[symbols[i]];
@@ -21635,22 +21641,17 @@
 	        return null;
 	      }
 	
-	      return _react2.default.createElement(
+	      return _react2.default.createElement(this.props.tag, { className: 'swipe-to-delete ' + this.props.classNameTag }, [_react2.default.createElement(
 	        'div',
-	        { className: 'swipe-to-delete' },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'js-delete' },
-	          this.props.background
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'js-content', ref: function ref(el) {
-	              return _this2.regionContent = el;
-	            } },
-	          this.props.children
-	        )
-	      );
+	        { key: 'delete', className: 'js-delete' },
+	        this.props.background
+	      ), _react2.default.createElement(
+	        'div',
+	        { key: 'content', className: 'js-content', ref: function ref(el) {
+	            return _this2.regionContent = el;
+	          } },
+	        this.props.children
+	      )]);
 	    }
 	  }, {
 	    key: 'componentDidMount',
@@ -21798,6 +21799,8 @@
 	
 	
 	SwipeToDelete.defaultProps = {
+	  tag: 'div',
+	  classNameTag: '',
 	  background: _react2.default.createElement(_background2.default, null),
 	  onDelete: function onDelete() {},
 	  onCancel: function onCancel() {}
@@ -21808,6 +21811,8 @@
 	  background: _react2.default.PropTypes.element,
 	  onDelete: _react2.default.PropTypes.func,
 	  onCancel: _react2.default.PropTypes.func,
+	  tag: _react2.default.PropTypes.string,
+	  classNameTag: _react2.default.PropTypes.string,
 	  deleteSwipe: function deleteSwipe(props, propName, componentName) {
 	    var val = props[propName];
 	
@@ -21816,11 +21821,11 @@
 	    }
 	
 	    if (typeof val !== 'number') {
-	      return new Error('Invalid prop "deleteWidth" in ' + componentName + ': can be number only.');
+	      return new Error('Invalid prop "deleteSwipe" in ' + componentName + ': can be number only.');
 	    }
 	
 	    if (val < 0 || val > 1) {
-	      return new Error('Invalid prop "deleteWidth" in ' + componentName + ': can be in range [0, 1].');
+	      return new Error('Invalid prop "deleteSwipe" in ' + componentName + ': can be in range [0, 1].');
 	    }
 	  }
 	};
@@ -24046,7 +24051,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Background = function Background(props) {
+	var Background = function Background() {
 	  var icon = _react2.default.createElement(
 	    "svg",
 	    { x: "0px", y: "0px", width: "512px", height: "512px", viewBox: "0 0 900.5 900.5" },
