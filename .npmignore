@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+coverage/
+npm-debug.log
+__mocks__/
+__tests__/
+example/
