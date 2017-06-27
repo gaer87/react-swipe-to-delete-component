@@ -5,7 +5,7 @@ export default class Device {
 }
 
 class Touch extends Device {
-  getPageX(e) { return e.originalEvent.targetTouches[0].pageX; }
+  getPageX(e) { return e.targetTouches[0].pageX; }
 
   getStartEventName() { return 'touchstart'; }
 
