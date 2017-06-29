@@ -1,15 +1,10 @@
 language: node_js
 
 node_js:
-  - node
+  - "6"
 
 addons:
     srcclr: true
-
-before_install:
-  - rm -rf node_modules
-  #- rm package-lock.json
-  - npm cache verify
 
 install:
   - npm install
