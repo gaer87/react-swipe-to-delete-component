@@ -6,6 +6,11 @@ node_js:
 addons:
     srcclr: true
 
+before_install:
+  - rm -rf node_modules
+  - rm package-lock.json
+  - npm cache clean
+
 install:
   - npm install
   - npm install react
