@@ -1,6 +1,7 @@
+import 'raf/polyfill';
 import React from 'react';
 import renderer from 'react-test-renderer';
-import ReactTestUtils from 'react-addons-test-utils';
+import ReactTestUtils from 'react-dom/test-utils';
 import SwipeToDelete from '../src/js/main';
 import Model from '../src/js/model';
 import Device from '../src/js/utils/device';
