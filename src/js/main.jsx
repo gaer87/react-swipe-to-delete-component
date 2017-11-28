@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Background from './background';
 import Model from './model';
 import isMobile from './utils/isMobile';
@@ -155,12 +156,12 @@ SwipeToDelete.defaultProps = {
 };
 
 SwipeToDelete.propTypes = {
-  children: React.PropTypes.element.isRequired,
-  background: React.PropTypes.element,
-  onDelete: React.PropTypes.func,
-  onCancel: React.PropTypes.func,
-  tag: React.PropTypes.string,
-  classNameTag: React.PropTypes.string,
+  children: PropTypes.element.isRequired,
+  background: PropTypes.element,
+  onDelete: PropTypes.func,
+  onCancel: PropTypes.func,
+  tag: PropTypes.string,
+  classNameTag: PropTypes.string,
   deleteSwipe: (props, propName, componentName) => {
     let val = props[propName];
 
