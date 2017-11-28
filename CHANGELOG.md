@@ -1,3 +1,9 @@
+### v0.3.4
+* Update the React dependence to 16 version.
+
+### v0.3.3
+* Update the React dependence to 15.6 version.
+
 ### v0.3.2
 * Update an example.
 
