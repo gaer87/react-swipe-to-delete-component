@@ -3,13 +3,8 @@ language: node_js
 node_js:
   - "6"
 
-addons:
-    srcclr: true
-
-before_install:
-  - sudo add-apt-repository ppa:masterminds/glide -y
-  - sudo apt-get update -q
-  - sudo apt-get install glide -y
+#addons:
+#    srcclr: true
 
 install:
   - npm install
