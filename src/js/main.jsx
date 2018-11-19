@@ -41,7 +41,7 @@ export default class SwipeToDelete extends React.Component {
   bindHandlers() {
     this.addHandlers = this.addHandlers.bind(this);
     this.interact = this.interact.bind(this);
-    this.moveAt = this.moveAt.bind(this);
+    this.onMove = this.onMove.bind(this);
     this.stopInteract = this.stopInteract.bind(this);
     this.offInteract = this.offInteract.bind(this);
     this.endInteract = this.endInteract.bind(this);
@@ -71,11 +71,16 @@ export default class SwipeToDelete extends React.Component {
   }
 
   interact() {
-    document.addEventListener(this.device.getInteractEventName(), this.moveAt, false);
+    document.addEventListener(this.device.getInteractEventName(), this.onMove, false);
   }
 
   offInteract() {
-    document.removeEventListener(this.device.getInteractEventName(), this.moveAt, false);
+    document.removeEventListener(this.device.getInteractEventName(), this.onMove, false);
+  }
+
+  onMove(e) {
+    this.moveAt(e);
+    this.callMoveCB(e);
   }
 
   moveAt(e) {
@@ -83,6 +88,22 @@ export default class SwipeToDelete extends React.Component {
     const res = this.device.getPageX(e) - this.model.startX;
 
     target.style.left = `${res}px`;
+  }
+
+  callMoveCB(e) {
+    const x = this.device.getPageX(e);
+    if (!this.model.hasPrevX()) {
+      return this.model.prevX = x;
+    }
+
+    const shift = x - this.model.prevX;
+    if (!shift) {
+      return;
+    }
+
+    shift > 0 ? this.props.onRight(e) : this.props.onLeft(e);
+
+    this.model.prevX = x;
   }
 
   stopInteract() {
@@ -100,6 +121,7 @@ export default class SwipeToDelete extends React.Component {
 
     this.offInteract();
     this.device.getStopEventNames().forEach(eventName => el.removeEventListener(eventName, this._onStopInteract, false));
+    this.model.erasePrevX();
 
     const shift = e.currentTarget.offsetLeft;
     !shift ? reject() : resolve();
@@ -112,6 +134,7 @@ export default class SwipeToDelete extends React.Component {
     const promise = new Promise((resolve, reject) => {
       if (this.model.isDelete(swipePercent)) {
         target.addEventListener('transitionend', e => resolve(e), false);
+        // TODO: помоему можно упростить: просто посмотреть на знак оффсета
         swipePercent < 0 ? target.classList.add('js-transition-delete-left') : target.classList.add('js-transition-delete-right');
       } else {
         target.addEventListener('transitionend', e => reject(e), false);
@@ -152,7 +175,9 @@ SwipeToDelete.defaultProps = {
   classNameTag: '',
   background: <Background/>,
   onDelete: () => {},
-  onCancel: () => {}
+  onCancel: () => {},
+  onLeft: () => {},
+  onRight: () => {}
 };
 
 SwipeToDelete.propTypes = {
@@ -160,6 +185,8 @@ SwipeToDelete.propTypes = {
   background: PropTypes.element,
   onDelete: PropTypes.func,
   onCancel: PropTypes.func,
+  onLeft: PropTypes.func,
+  onRight: PropTypes.func,
   tag: PropTypes.string,
   classNameTag: PropTypes.string,
   deleteSwipe: (props, propName, componentName) => {

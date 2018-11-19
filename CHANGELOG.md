@@ -1,3 +1,6 @@
+### v0.4.0
+* Added "onRight" and "onLeft" events.
+
 ### v0.3.4
 * Update the React dependence to 16 version.
 

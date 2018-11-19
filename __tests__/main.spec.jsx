@@ -61,15 +61,25 @@ describe('A SwipeToDelete', () => {
       });
   });
 
-  it('A "moveAt()" should set "left" style on a content component', () => {
-    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
-    const content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
+  describe('A "onMove()"', () => {
+    it('should set "left" style on a content component', () => {
+      const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+      const content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
 
-    const pageX = 5;
-    const e = {pageX};
+      const pageX = 5;
+      const e = {pageX};
 
-    component.moveAt(e);
-    expect(content.style.left).toBe(`${pageX}px`);
+      component.moveAt(e);
+      expect(content.style.left).toBe(`${pageX}px`);
+    });
+
+    xit('should call "onRight()" then an user swipe content on right', () => {
+
+    });
+
+    xit('should call "onLeft()" then an user swipe content on left', () => {
+
+    });
   });
 
   it('should call "onStopInteract()" when user stop interacting', () => {
