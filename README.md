@@ -55,7 +55,7 @@ render(app, document.getElementById('root'));
 - **background** - This is a decoration component under a content component. By default, showed red element with trash icons. *Optional*.
 - **deleteSwipe** - This is a number. If a content component is swiped more this the number than a swipe-to-delete component will start a delete animation. By default, it's equal "0.5". *Optional*.
 - **onDelete** - This is a function. If a content component is deleted then It will be called. *Optional*.
-- **onRight/onLeft** - This is a function. If a content component is swiped these then functions is called. *Optional*.
+- **onRight/onLeft** - This is a function. If a content component is swiped then these functions is called. *Optional*.
 
 ### Styles
 You may set up styles in "swipe-to-delete.css" under the comment "Custom styles". The class *js-content* is content region, *js-delete* is delete region. Classes *js-transition-delete-right* and *js-transition-delete-left* are added on a content component when it's swiped more than "deleteSwipe" options. Class *js-transition-cancel* is added when a content component swiped less than "deleteSwipe" options. Animations are made by CSS3 transition.
