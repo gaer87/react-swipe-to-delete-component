@@ -55,6 +55,7 @@ render(app, document.getElementById('root'));
 - **background** - This is a decoration component under a content component. By default, showed red element with trash icons. *Optional*.
 - **deleteSwipe** - This is a number. If a content component is swiped more this the number than a swipe-to-delete component will start a delete animation. By default, it's equal "0.5". *Optional*.
 - **onDelete** - This is a function. If a content component is deleted then It will be called. *Optional*.
+- **onCancel** - This is a function. If a content component isn't deleted then It will be called. *Optional*.
 - **onRight/onLeft** - This is a function. If a content component is swiped then these functions is called. *Optional*.
 
 ### Styles
