@@ -62,6 +62,7 @@ export default class SwipeToDelete extends React.Component {
       this.onInteract = e => {
         el.removeEventListener(this.device.getStartEventName(), this.onInteract, false);
         this.model.startX = this.device.getPageX(e);
+        this.model.startY = this.device.getPageY(e);
         resolve();
       };
 
@@ -85,9 +86,15 @@ export default class SwipeToDelete extends React.Component {
 
   moveAt(e) {
     const target = this.regionContent.firstChild;
-    const res = this.device.getPageX(e) - this.model.startX;
+    const resX = this.device.getPageX(e) - this.model.startX;
+    const resY = this.device.getPageY(e) - this.model.startY;
 
-    target.style.left = `${res}px`;
+    if (Math.abs(resX) <= Math.abs(resY)) {
+      console.info('F');
+      return;
+    }
+
+    target.style.left = `${resX}px`;
   }
 
   callMoveCB(e) {

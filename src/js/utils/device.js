@@ -7,6 +7,8 @@ export default class Device {
 class Touch extends Device {
   getPageX(e) { return e.targetTouches[0].pageX; }
 
+  getPageY(e) { return e.targetTouches[0].pageY; }
+
   getStartEventName() { return 'touchstart'; }
 
   getInteractEventName() { return 'touchmove'; }
@@ -16,6 +18,8 @@ class Touch extends Device {
 
 class Mouse extends Device {
   getPageX(e) { return e.pageX; }
+
+  getPageY(e) { return e.pageY; }
 
   getStartEventName() { return 'mousedown'; }
 
