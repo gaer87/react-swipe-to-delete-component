@@ -40,6 +40,7 @@ export default class SwipeToDelete extends React.Component {
 
   bindHandlers() {
     this.addHandlers = this.addHandlers.bind(this);
+    this.isInteract = this.isInteract.bind(this);
     this.interact = this.interact.bind(this);
     this.onMove = this.onMove.bind(this);
     this.stopInteract = this.stopInteract.bind(this);
@@ -51,6 +52,7 @@ export default class SwipeToDelete extends React.Component {
 
   addHandlers() {
     this.step = this.startInteract()
+      .then(this.isInteract)
       .then(this.interact)
       .then(this.stopInteract)
       .then(this.endInteract)
@@ -59,15 +61,28 @@ export default class SwipeToDelete extends React.Component {
 
   startInteract() {
     return new Promise(resolve => {
-      this.onInteract = e => {
-        el.removeEventListener(this.device.getStartEventName(), this.onInteract, false);
+      const onStartInteract = e => {
+        el.removeEventListener(this.device.getStartEventName(), onStartInteract, false);
         this.model.startX = this.device.getPageX(e);
         this.model.startY = this.device.getPageY(e);
         resolve();
       };
 
       const el = this.regionContent.firstChild;
-      el.addEventListener(this.device.getStartEventName(), this.onInteract, false);
+      el.addEventListener(this.device.getStartEventName(), onStartInteract, false);
+    });
+  }
+
+  isInteract() {
+    return new Promise((resolve, reject) => {
+      const onFirstMove = e => {
+        document.removeEventListener(this.device.getInteractEventName(), onFirstMove, false);
+        const wayX = this.device.getPageX(e) - this.model.startX;
+        const wayY = this.device.getPageY(e) - this.model.startY;
+        Math.abs(wayX) > Math.abs(wayY) ? resolve() : reject();
+      };
+
+      document.addEventListener(this.device.getInteractEventName(), onFirstMove, false);
     });
   }
 
@@ -80,24 +95,15 @@ export default class SwipeToDelete extends React.Component {
   }
 
   onMove(e) {
-    const resX = this.device.getPageX(e) - this.model.startX;
-    const resY = this.device.getPageY(e) - this.model.startY;
-
-    // TODO: поправить когда тач в обратную сторону
-    if (Math.abs(resX) <= Math.abs(resY)) {
-      console.info('F');
-      // this.model.startX = this.device.getPageX(e);
-      // this.model.startY = this.device.getPageY(e);
-      return this.offInteract();
-    }
-
-    this.moveAt(resX);
+    this.moveAt(e);
     this.callMoveCB(e);
   }
 
-  moveAt(resX) {
+  moveAt(e) {
     const target = this.regionContent.firstChild;
-    target.style.left = `${resX}px`;
+    const res = this.device.getPageX(e) - this.model.startX;
+
+    target.style.left = `${res}px`;
   }
 
   callMoveCB(e) {
