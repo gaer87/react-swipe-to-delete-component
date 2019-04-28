@@ -2,6 +2,7 @@ export default class Model {
   constructor({deleteSwipe = .5}) {
     this.deleteSwipe = deleteSwipe;
     this.startX = 0;
+    this.startY = 0;
     this.erasePrevX();
   }
 
@@ -18,6 +19,6 @@ export default class Model {
   }
 
   isDelete(percent) {
-    return ((percent > 0 && percent >= this.deleteSwipe) || (percent < 0 && percent <= -this.deleteSwipe));
+    return Math.abs(percent) >= this.deleteSwipe;
   }
 }

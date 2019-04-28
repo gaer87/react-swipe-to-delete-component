@@ -150,7 +150,6 @@ export default class SwipeToDelete extends React.Component {
     const promise = new Promise((resolve, reject) => {
       if (this.model.isDelete(swipePercent)) {
         target.addEventListener('transitionend', e => resolve(e), false);
-        // TODO: помоему можно упростить: просто посмотреть на знак оффсета
         swipePercent < 0 ? target.classList.add('js-transition-delete-left') : target.classList.add('js-transition-delete-right');
       } else {
         target.addEventListener('transitionend', e => reject(e), false);
@@ -182,7 +181,7 @@ export default class SwipeToDelete extends React.Component {
     const target = e.currentTarget;
     target.classList.remove('js-transition-cancel');
 
-    this.model.startX = target.style.left = 0;
+    this.model.startX = this.model.startY = target.style.left = 0;
   }
 }
 
