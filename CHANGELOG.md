@@ -1,3 +1,6 @@
+### v0.5.0
+* Do not move a component if it moved by Y
+
 ### v0.4.0
 * Added "onRight" and "onLeft" events.
 
