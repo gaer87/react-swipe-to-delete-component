@@ -51,7 +51,7 @@ export default class SwipeToDelete extends React.Component {
   }
 
   addHandlers() {
-    this.step = this.startInteract()
+    this.startInteract()
       .then(this.isInteract)
       .then(this.interact)
       .then(this.stopInteract)

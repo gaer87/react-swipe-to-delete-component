@@ -12,6 +12,7 @@ describe('A SwipeToDelete', () => {
   const componentDidMountOrig = SwipeToDelete.prototype.componentDidMount;
   const addHandlersOrig = SwipeToDelete.prototype.addHandlers;
   const startInteractOrig = SwipeToDelete.prototype.startInteract;
+  const isInteractOrig = SwipeToDelete.prototype.isInteract;
   const moveAtOrig = SwipeToDelete.prototype.moveAt;
   const stopInteractOrig = SwipeToDelete.prototype.stopInteract;
   const onStopInteractOrig = SwipeToDelete.prototype.onStopInteract;
@@ -23,6 +24,7 @@ describe('A SwipeToDelete', () => {
     // Return original methods after mock
     SwipeToDelete.prototype.componentDidMount = componentDidMountOrig;
     SwipeToDelete.prototype.startInteract = startInteractOrig;
+    SwipeToDelete.prototype.isInteract = isInteractOrig;
     SwipeToDelete.prototype.addHandlers = addHandlersOrig;
     SwipeToDelete.prototype.moveAt = moveAtOrig;
     SwipeToDelete.prototype.stopInteract = stopInteractOrig;
@@ -42,24 +44,43 @@ describe('A SwipeToDelete', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it('should move a content component', () => {
-    SwipeToDelete.prototype.moveAt = jest.fn();
+  describe('if a content component is moved', () => {
+    let content;
+    beforeEach(() => {
+      SwipeToDelete.prototype.moveAt = jest.fn();
 
-    // Skip next steps for async test
-    SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
-    SwipeToDelete.prototype.endInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      // Skip next steps for async test
+      SwipeToDelete.prototype.endInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
 
-    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
-    const content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
+      const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+      content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
 
-    simulateDOMMouseEvent(device.getStartEventName(), content);
+      simulateDOMMouseEvent(device.getStartEventName(), content);
 
-    return component.step
-      .then(() => {
-        simulateDOMMouseEvent(device.getInteractEventName(), document);
-        expect(SwipeToDelete.prototype.moveAt).toBeCalled();
-      });
+      return waitExec();
+    });
+
+    it('should move it when it is moved by X', () => {
+      simulateDOMMouseEvent(device.getInteractEventName(), document, {pageX: 10, pageY: 0});
+      return waitExec()
+        .then(() => {
+          simulateDOMMouseEvent(device.getInteractEventName(), document, {pageX: 11, pageY: 0});
+          expect(SwipeToDelete.prototype.moveAt).toBeCalled();
+          simulateDOMMouseEvent(device.getStopEventNames()[0], content);
+        })
+    });
+
+    it('should not move it when it is moved by Y', () => {
+      simulateDOMMouseEvent(device.getInteractEventName(), document, {pageX: 4, pageY: 10});
+      return waitExec()
+        .then(() => {
+          simulateDOMMouseEvent(device.getInteractEventName(), document, {pageX: 5, pageY: 11});
+          expect(SwipeToDelete.prototype.moveAt).not.toBeCalled();
+          simulateDOMMouseEvent(device.getStopEventNames()[0], content);
+        });
+    });
   });
+
 
   describe('A "onMove()"', () => {
     it('should set "left" style on a content component', () => {
@@ -84,13 +105,13 @@ describe('A SwipeToDelete', () => {
 
   it('should call "onStopInteract()" when user stop interacting', () => {
     SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+    SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
     SwipeToDelete.prototype.onStopInteract = jest.fn();
 
     const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
     const content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
 
-    const waitStopInteractExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-    return waitStopInteractExec
+    return waitExec()
       .then(() => {
         simulateDOMMouseEvent(device.getStartEventName(), content);
         simulateDOMMouseEvent(device.getStopEventNames()[0], content);
@@ -118,14 +139,14 @@ describe('A SwipeToDelete', () => {
     beforeEach(() => {
       Model.prototype.calcSwipePercent = jest.fn().mockReturnValueOnce(.7);
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.onDelete = jest.fn();
 
       component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
       content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
 
-      const waitStopInteractExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitStopInteractExec;
+      return waitExec();
     });
 
     it('should add a "js-transition-delete-[right|left]" class', () => {
@@ -137,8 +158,7 @@ describe('A SwipeToDelete', () => {
       const event = new Event('transitionend');
       content.dispatchEvent(event);
 
-      const waitTransExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitTransExec
+      return waitExec()
         .then(() => {
           expect(SwipeToDelete.prototype.onDelete).toBeCalled();
         });
@@ -160,14 +180,14 @@ describe('A SwipeToDelete', () => {
           addHandlersOrig.call(this);
         });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.onCancel = jest.fn();
 
       component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
       content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
 
-      const waitStopInteractExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitStopInteractExec;
+      return waitExec();
     });
 
     it('should add a "js-transition-cancel" class', () => {
@@ -179,8 +199,7 @@ describe('A SwipeToDelete', () => {
       const event = new Event('transitionend');
       content.dispatchEvent(event);
 
-      const waitTransExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitTransExec
+      return waitExec()
         .then(() => {
           expect(SwipeToDelete.prototype.onCancel).toBeCalled();
         });
@@ -213,13 +232,13 @@ describe('A SwipeToDelete', () => {
           addHandlersOrig.call(this);
         });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.reject());
       SwipeToDelete.prototype.endInteract = jest.fn();
 
       ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
 
-      const waitStopInteractExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitStopInteractExec;
+      return waitExec();
     });
 
     it('should not call a "endInteract()" method', () => {
@@ -241,6 +260,7 @@ describe('A SwipeToDelete', () => {
       onDelete = jest.fn();
 
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.endInteract = jest.fn(function() {
         return Promise.resolve()
@@ -251,8 +271,7 @@ describe('A SwipeToDelete', () => {
 
       component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onDelete={onDelete}><div className="content">Content ...</div></SwipeToDelete>);
 
-      const waitExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitExec;
+      return waitExec();
     });
 
     it('should call a "onDelete()" props', () => {
@@ -282,6 +301,7 @@ describe('A SwipeToDelete', () => {
           addHandlersOrig.call(this);
         });
       SwipeToDelete.prototype.startInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
+      SwipeToDelete.prototype.isInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.stopInteract = jest.fn().mockReturnValueOnce(Promise.resolve());
       SwipeToDelete.prototype.endInteract = jest.fn(function() {
         return Promise.reject()
@@ -293,8 +313,7 @@ describe('A SwipeToDelete', () => {
 
       component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onCancel={onCancel}><div className="content js-transition-cancel">Content ...</div></SwipeToDelete>);
 
-      const waitExec = new Promise((resolve) => {setTimeout(resolve, 4)});
-      return waitExec;
+      return waitExec();
     });
 
     it('should call a "onCancel()" props', () => {
@@ -312,11 +331,13 @@ describe('A SwipeToDelete', () => {
 // but <SwipeToDelete> attaches event listeners directly to the document.
 const simulateDOMMouseEvent = (eventName, node, {pageX = 0, pageY = 0} = {}) => {
   const event = new MouseEvent(eventName, {
-    pageX,
-    pageY,
     bubbles: true,
     cancelable: true
   });
+  event.pageX = pageX;
+  event.pageY = pageY;
 
   node.dispatchEvent(event);
 };
+
+const waitExec = () => new Promise((resolve) => {setTimeout(resolve, 4)});
