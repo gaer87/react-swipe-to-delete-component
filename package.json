@@ -1,6 +1,6 @@
 {
   "name": "react-swipe-to-delete-component",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A simple React component implement 'swipe to delete' UI-pattern.",
   "homepage": "https://github.com/gaer87/react-swipe-to-delete-component",
   "main": "dist/swipe-to-delete.min.js",
