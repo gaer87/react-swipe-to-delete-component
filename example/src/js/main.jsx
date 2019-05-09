@@ -4,7 +4,7 @@ import {render} from 'react-dom';
 import SwipeToDelete from 'react-swipe-to-delete-component';
 
 const data = [
-  {id: 5, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2017'},
+  {id: 5, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2019'},
   {id: 4, text: 'Somewhere in the middle 📸', date: '23.01.2017'},
   {id: 3, text: 'Best part of the day ☕', date: '5.03.2016'},
   {id: 2, text: 'What\'s everybody reading?', date: '3.03.2016'},

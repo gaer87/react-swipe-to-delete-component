@@ -1,23 +1,25 @@
 'use strict';
 
-let path = require('path');
-let ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-let config = {
+const config = {
   entry: {
-    SwipeToDeleteComponent: [path.resolve(__dirname, 'src/js/main')]
+    SwipeToDeleteComponent: [path.resolve(__dirname, 'src/js/main')],
   },
 
   output: {
     path: path.resolve(__dirname, 'dist'),
     library: '[name]',
     libraryTarget: 'umd',
-    filename: 'swipe-to-delete.js'
+    filename: 'swipe-to-delete.js',
   },
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.jsx']
+    modules: [
+      'node_modules',
+    ],
+    extensions: ['.js', '.jsx'],
   },
 
   externals: {
@@ -25,33 +27,51 @@ let config = {
       root: 'React',
       commonjs: 'react',
       commonjs2: 'react',
-      amd: 'react'
+      amd: 'react',
     },
     'react-dom': {
       root: 'ReactDOM',
       commonjs: 'react-dom',
       commonjs2: 'react-dom',
-      amd: 'react-dom'
-    }
+      amd: 'react-dom',
+    },
   },
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+        ],
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style', 'css!sass?indentType=tab&indentWidth=1')
-      }
-    ]
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'sass-loader',
+          },
+        ],
+      },
+    ],
   },
 
   plugins: [
-    new ExtractTextPlugin('swipe-to-delete.css')
-  ]
+    new MiniCssExtractPlugin({
+      filename: 'swipe-to-delete.css',
+    }),
+  ],
+
+  mode: 'production',
 };
 
 module.exports = config;

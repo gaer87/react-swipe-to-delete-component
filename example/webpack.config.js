@@ -4,7 +4,7 @@ const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-let config = {
+const config = {
   entry: {
     example: [path.resolve(__dirname, 'src/js/main')],
   },
@@ -48,10 +48,6 @@ let config = {
           },
           {
             loader: 'sass-loader',
-            options: {
-              indentType: 'tab',
-              indentWidth: 1,
-            },
           },
         ],
       },
@@ -63,9 +59,11 @@ let config = {
       filename: 'swipe-to-delete.css',
     }),
     new webpack.LoaderOptionsPlugin({
-      debug: true
+      debug: true,
     }),
   ],
+
+  mode: 'development',
 
   devServer: {
     contentBase: __dirname,
