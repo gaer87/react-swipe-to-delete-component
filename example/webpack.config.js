@@ -1,7 +1,8 @@
 'use strict';
 
-let path = require('path');
-let ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 let config = {
   entry: {
@@ -14,47 +15,67 @@ let config = {
   },
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.jsx'],
+    modules: [
+      'node_modules',
+    ],
+    extensions: ['.js', '.jsx'],
     alias: {
-      'react-swipe-to-delete-component': path.resolve(__dirname, '../src/js/main')
-    }
+      'react-swipe-to-delete-component': path.resolve(__dirname, '../src/js/main'),
+    },
   },
-
-  debug: true,
 
   devtool: 'source-map',
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+        ],
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style', 'css!sass?indentType=tab&indentWidth=1')
-      }
-    ]
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              indentType: 'tab',
+              indentWidth: 1,
+            },
+          },
+        ],
+      },
+    ],
   },
 
   plugins: [
-    new ExtractTextPlugin('swipe-to-delete.css')
+    new MiniCssExtractPlugin({
+      filename: 'swipe-to-delete.css',
+    }),
+    new webpack.LoaderOptionsPlugin({
+      debug: true
+    }),
   ],
 
   devServer: {
-    colors: true,
     contentBase: __dirname,
     historyApiFallback: true,
-    // hot: true,
     inline: true,
     port: 8080,
-    progress: true,
     stats: {
       cached: false,
-    }
-  }
+    },
+  },
 };
 
 module.exports = config;
