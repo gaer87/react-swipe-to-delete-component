@@ -12,7 +12,7 @@ const config = {
     path: path.resolve(__dirname, 'dist'),
     library: '[name]',
     libraryTarget: 'umd',
-    filename: 'swipe-to-delete.js',
+    filename: 'swipe-to-delete.min.js',
   },
 
   resolve: {
