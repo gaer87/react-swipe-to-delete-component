@@ -26187,12 +26187,8 @@ function (_React$Component) {
     key: "callMoveCB",
     value: function callMoveCB(e) {
       var x = this.device.getPageX(e);
-
-      if (!this.model.hasPrevX()) {
-        return this.model.prevX = x;
-      }
-
-      var shift = x - this.model.prevX;
+      var prev = this.model.prevX || this.model.startX;
+      var shift = x - prev;
 
       if (!shift) {
         return;
@@ -26360,11 +26356,6 @@ function () {
     key: "erasePrevX",
     value: function erasePrevX() {
       this.prevX = null;
-    }
-  }, {
-    key: "hasPrevX",
-    value: function hasPrevX() {
-      return this.prevX !== null;
     }
   }, {
     key: "calcSwipePercent",
