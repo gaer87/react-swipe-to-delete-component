@@ -10,10 +10,6 @@ export default class Model {
     this.prevX = null;
   }
 
-  hasPrevX() {
-    return this.prevX !== null;
-  }
-
   calcSwipePercent({shift, width}) {
     return shift / width;
   }

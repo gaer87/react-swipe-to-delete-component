@@ -94,12 +94,28 @@ describe('A SwipeToDelete', () => {
       expect(content.style.left).toBe(`${pageX}px`);
     });
 
-    xit('should call "onRight()" then an user swipe content on right', () => {
+    it('should call "onRight()" then an user swipe content on right', () => {
+      const onRight = jest.fn();
+      const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onRight={onRight}><div className="content">Content ...</div></SwipeToDelete>);
 
+      const pageX = 5;
+      const e = {pageX};
+
+      component.callMoveCB(e);
+
+      expect(onRight).toBeCalled();
     });
 
-    xit('should call "onLeft()" then an user swipe content on left', () => {
+    it('should call "onLeft()" then an user swipe content on left', () => {
+      const onLeft = jest.fn();
+      const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onLeft={onLeft}><div className="content">Content ...</div></SwipeToDelete>);
 
+      const pageX = -5;
+      const e = {pageX};
+
+      component.callMoveCB(e);
+
+      expect(onLeft).toBeCalled();
     });
   });
 

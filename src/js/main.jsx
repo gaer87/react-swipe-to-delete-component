@@ -108,11 +108,9 @@ export default class SwipeToDelete extends React.Component {
 
   callMoveCB(e) {
     const x = this.device.getPageX(e);
-    if (!this.model.hasPrevX()) {
-      return this.model.prevX = x;
-    }
+    const prev = this.model.prevX || this.model.startX;
 
-    const shift = x - this.model.prevX;
+    const shift = x - prev;
     if (!shift) {
       return;
     }
