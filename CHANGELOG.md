@@ -1,3 +1,10 @@
+### v0.5.1
+* Updated Webpack from 1st to 4th version. Update Babel from 6th to 7th version. 
+* Used "@babel/preset-env" and a list of supported browsers.
+* Size of the dist are reduced.
+* Added some tests.
+* Did small refactoring 
+
 ### v0.5.0
 * Do not move a component if it moved by Y
 
