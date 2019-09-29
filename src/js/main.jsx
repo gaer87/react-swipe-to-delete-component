@@ -38,6 +38,10 @@ export default class SwipeToDelete extends React.Component {
     this.addHandlers();
   }
 
+  componentWillUnmount() {
+    this.regionContent && this.removeHandlers();
+  }
+
   bindHandlers() {
     this.addHandlers = this.addHandlers.bind(this);
     this.isInteract = this.isInteract.bind(this);
@@ -59,31 +63,49 @@ export default class SwipeToDelete extends React.Component {
       .catch(this.addHandlers);
   }
 
+  removeHandlers() {
+    const el = this.regionContent.firstChild;
+    this.stopListenStartInteract(el);
+    this.stopListenIsInteract();
+    this.offInteract();
+    this.stopListenStopInteract(el);
+    this.stopListenEndInteract(el);
+  }
+
   startInteract() {
     return new Promise(resolve => {
-      const onStartInteract = e => {
-        el.removeEventListener(this.device.getStartEventName(), onStartInteract, false);
+      const el = this.regionContent.firstChild;
+
+      this._onStartInteract = e => {
+        this.stopListenStartInteract(el);
         this.model.startX = this.device.getPageX(e);
         this.model.startY = this.device.getPageY(e);
         resolve();
       };
 
-      const el = this.regionContent.firstChild;
-      el.addEventListener(this.device.getStartEventName(), onStartInteract, false);
+      el.addEventListener(this.device.getStartEventName(), this._onStartInteract, false);
     });
+  }
+
+  stopListenStartInteract(el) {
+    el.removeEventListener(this.device.getStartEventName(), this._onStartInteract);
   }
 
   isInteract() {
     return new Promise((resolve, reject) => {
-      const onFirstMove = e => {
-        document.removeEventListener(this.device.getInteractEventName(), onFirstMove, false);
+      this._onIsInteract = e => {
+        this.stopListenIsInteract();
         const wayX = this.device.getPageX(e) - this.model.startX;
         const wayY = this.device.getPageY(e) - this.model.startY;
         Math.abs(wayX) > Math.abs(wayY) ? resolve() : reject();
       };
 
-      document.addEventListener(this.device.getInteractEventName(), onFirstMove, false);
+      document.addEventListener(this.device.getInteractEventName(), this._onIsInteract, false);
     });
+  }
+
+  stopListenIsInteract() {
+    document.removeEventListener(this.device.getInteractEventName(), this._onIsInteract);
   }
 
   interact() {
@@ -124,17 +146,21 @@ export default class SwipeToDelete extends React.Component {
     return new Promise((resolve, reject) => {
       const el = this.regionContent.firstChild;
 
-      this._onStopInteract = e => this.onStopInteract(e, resolve, reject);
+      this._onStopInteract = e => {
+        this.stopListenStopInteract(el);
+        this.onStopInteract(e, resolve, reject);
+      }
 
       this.device.getStopEventNames().forEach(eventName => el.addEventListener(eventName, this._onStopInteract, false));
     });
   }
 
-  onStopInteract(e, resolve, reject) {
-    const el = this.regionContent.firstChild;
+  stopListenStopInteract(el) {
+    this.device.getStopEventNames().forEach(eventName => el.removeEventListener(eventName, this._onStopInteract));
+  }
 
+  onStopInteract(e, resolve, reject) {
     this.offInteract();
-    this.device.getStopEventNames().forEach(eventName => el.removeEventListener(eventName, this._onStopInteract, false));
     this.model.erasePrevX();
 
     const shift = e.currentTarget.offsetLeft;
@@ -142,16 +168,25 @@ export default class SwipeToDelete extends React.Component {
   }
 
   endInteract() {
-    const target = this.regionContent.firstChild;
+    const el = this.regionContent.firstChild;
     const swipePercent = this.getSwipePercent();
 
     const promise = new Promise((resolve, reject) => {
+      this._onTransitionendDelete = e => {
+        this.stopListenEndInteract(el);
+        resolve(e);
+      }
+      this._onTransitionendCancel = e => {
+        this.stopListenEndInteract(el);
+        reject(e);
+      }
+
       if (this.model.isDelete(swipePercent)) {
-        target.addEventListener('transitionend', e => resolve(e), false);
-        swipePercent < 0 ? target.classList.add('js-transition-delete-left') : target.classList.add('js-transition-delete-right');
+        el.addEventListener('transitionend', this._onTransitionendDelete, false);
+        swipePercent < 0 ? el.classList.add('js-transition-delete-left') : el.classList.add('js-transition-delete-right');
       } else {
-        target.addEventListener('transitionend', e => reject(e), false);
-        target.classList.add('js-transition-cancel');
+        el.addEventListener('transitionend', this._onTransitionendCancel, false);
+        el.classList.add('js-transition-cancel');
       }
     });
 
@@ -159,6 +194,11 @@ export default class SwipeToDelete extends React.Component {
       .then(this.onDelete, this.onCancel);
 
     return promise;
+  }
+
+  stopListenEndInteract(el) {
+    el.addEventListener('transitionend', this._onTransitionendDelete);
+    el.addEventListener('transitionend', this._onTransitionendCancel);
   }
 
   getSwipePercent() {
