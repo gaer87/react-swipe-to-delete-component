@@ -19,20 +19,18 @@ The React-swipe-to-delete-component wrap your a content component. It's become s
 You may see an example [here](http://gaer87.github.io/react-swipe-to-delete-component/example/).
 ```js
 import React from 'react';
-import {render} from 'react-dom';
+import { render } from 'react-dom';
 // Import the react-swipe-to-delete-component
 import SwipeToDelete from 'react-swipe-to-delete-component';
-// CommonJS
-// var SwipeToDelete = require('react-swipe-to-delete-component').default;
 
 const data = [
-  {id: 1, text: 'Best part of the day ☕', date: '5.03.2016'},
-  {id: 2, text: 'What\'s everybody reading?', date: '3.03.2016'},
-  {id: 3, text: 'End of summer reading list', date: '1.03.2016'}
+  {id: 1, text: 'End of summer reading list', date: '1.03.2016'},
+  {id: 2, text: 'Somewhere in the middle 📸', date: '23.01.2017'},
+  {id: 3, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2019'}
 ];
 
 const list = data.map(item => (
-  <SwipeToDelete key={item.id}>
+  <SwipeToDelete key={item.id} item={item}>
     <a className="list-group-item">
       <h4 className="list-group-item-heading">{item.date}</h4>
       <p className="list-group-item-text">{item.text}</p>
@@ -54,8 +52,8 @@ render(app, document.getElementById('root'));
 - **classNameTag** - This is classes of a root element. *Optional*.
 - **background** - This is a decoration component under a content component. By default, showed red element with trash icons. *Optional*.
 - **deleteSwipe** - This is a number. If a content component is swiped more this the number than a swipe-to-delete component will start a delete animation. By default, it's equal "0.5". *Optional*.
-- **onDelete** - This is a function. If a content component is deleted then It will be called. *Optional*.
-- **onCancel** - This is a function. If a content component isn't deleted then It will be called. *Optional*.
+- **onDelete** - This is a function. If a content component is deleted then it will be called. It receives custom props from a `<SwipeToDelete />` component. *Optional*.
+- **onCancel** - This is a function. If a content component isn't deleted then it will be called. It receives custom props from a `<SwipeToDelete />` component. *Optional*.
 - **onRight/onLeft** - This is a function. If a content component is swiped then these functions is called. *Optional*.
 
 ### Styles
