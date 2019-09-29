@@ -11,15 +11,13 @@ const paths = {
   dist: 'dist',
 };
 
-gulp.task('clean', () => del([paths.dist]));
+const clean = () => del([paths.dist])
 
-gulp.task('webpack', ['clean'], () => {
-  return gulp.src(paths.src)
-    .pipe(stream(webpackConfig))
-    .pipe(gulp.dest(paths.dist));
-});
+const wp = () => gulp.src(paths.src)
+  .pipe(stream(webpackConfig))
+  .pipe(gulp.dest(paths.dist));
 
-gulp.task('banner', ['webpack'], () => {
+const banner = () => {
   const comment =
 `/*!
  * ${pkg.name[0].toUpperCase() + pkg.name.slice(1)} v${pkg.version}
@@ -34,12 +32,8 @@ gulp.task('banner', ['webpack'], () => {
   return gulp.src(`${paths.dist}/*`)
     .pipe(replace(/^/, comment))
     .pipe(gulp.dest(paths.dist));
-});
+}
 
-gulp.task('build', [
-  'clean',
-  'webpack',
-  'banner',
-]);
-
-gulp.task('default', ['build']);
+const build = gulp.series(clean, wp, banner);
+exports.build = build;
+exports.default = gulp.series(build);
