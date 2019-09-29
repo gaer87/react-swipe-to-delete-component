@@ -11,13 +11,13 @@ const data = [
   {id: 1, text: 'End of summer reading list', date: '1.03.2016'}
 ];
 
-const onDelete = () => console.info('onDelete');
-const onCancel = () => console.info('onCancel');
+const onDelete = (customProps) => console.info('onDelete', customProps);
+const onCancel = (customProps) => console.info('onCancel', customProps);
 const onLeft = (...args) => console.info('onLeft', ...args);
 const onRight = (...args) => console.info('onRight', ...args);
 
 const list = data.map(item => (
-  <SwipeToDelete key={item.id} tag="li" classNameTag="tw feed" onDelete={onDelete} onCancel={onCancel} onLeft={onLeft} onRight={onRight}>
+  <SwipeToDelete key={item.id} tag="li" classNameTag="tw feed" onDelete={onDelete} onCancel={onCancel} onLeft={onLeft} onRight={onRight} item={item}>
     <a className="list-group-item">
       <h4 className="list-group-item-heading">{item.date}</h4>
       <p className="list-group-item-text">{item.text}</p>

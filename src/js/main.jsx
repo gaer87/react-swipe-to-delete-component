@@ -169,17 +169,26 @@ export default class SwipeToDelete extends React.Component {
   }
 
   onDelete() {
-    this.props.onDelete();
+    this.props.onDelete(this.customProps);
     this.setState({isDeleted: true});
   }
 
   onCancel(e) {
-    this.props.onCancel();
+    this.props.onCancel(this.customProps);
 
     const target = e.currentTarget;
     target.classList.remove('js-transition-cancel');
 
     this.model.startX = this.model.startY = target.style.left = 0;
+  }
+
+  get customProps() {
+    const props = Object.keys(SwipeToDelete.propTypes);
+    const customProps = Object.keys(this.props).filter(name => !props.includes(name));
+    return customProps.reduce((memo, name) => {
+      memo[name] = this.props[name];
+      return memo;
+    }, {});
   }
 }
 
