@@ -1262,9 +1262,9 @@ if (true) {
 
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var _assign = __webpack_require__(/*! object-assign */ "./node_modules/object-assign/index.js");
-var Scheduler = __webpack_require__(/*! scheduler */ "./node_modules/react-dom/node_modules/scheduler/index.js");
+var Scheduler = __webpack_require__(/*! scheduler */ "./node_modules/scheduler/index.js");
 var checkPropTypes = __webpack_require__(/*! prop-types/checkPropTypes */ "./node_modules/prop-types/checkPropTypes.js");
-var tracing = __webpack_require__(/*! scheduler/tracing */ "./node_modules/react-dom/node_modules/scheduler/tracing.js");
+var tracing = __webpack_require__(/*! scheduler/tracing */ "./node_modules/scheduler/tracing.js");
 
 // Do not require this module directly! Use normal `invariant` calls with
 // template literal strings. The messages will be converted to ReactError during
@@ -29218,1515 +29218,6 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!********************************************************************************************!*\
-  !*** ./node_modules/react-dom/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \********************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/** @license React v0.16.1
- * scheduler-tracing.development.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-
-
-
-if (true) {
-  (function() {
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-// Helps identify side effects in begin-phase lifecycle hooks and setState reducers:
-
- // In some cases, StrictMode should also double-render lifecycles.
-// This can be confusing for tests though,
-// And it can be bad for performance in production.
-// This feature flag can be used to control the behavior:
-
- // To preserve the "Pause on caught exceptions" behavior of the debugger, we
-// replay the begin phase of a failed component inside invokeGuardedCallback.
-
- // Warn about deprecated, async-unsafe lifecycles; relates to RFC #6:
-
- // Gather advanced timing metrics for Profiler subtrees.
-
- // Trace which interactions trigger each commit.
-
-var enableSchedulerTracing = true; // Only used in www builds.
-
- // TODO: true? Here it might just be false.
-
- // Only used in www builds.
-
- // Only used in www builds.
-
- // Disable javascript: URL strings in href for XSS protection.
-
- // React Fire: prevent the value and checked attributes from syncing
-// with their related DOM properties
-
- // These APIs will no longer be "unstable" in the upcoming 16.7 release,
-// Control this behavior with a flag to support 16.6 minor releases in the meanwhile.
-
-
- // See https://github.com/react-native-community/discussions-and-proposals/issues/72 for more information
-// This is a flag so we can fix warnings in RN core before turning it on
-
- // Experimental React Flare event system and event components support.
-
- // Experimental Host Component support.
-
- // Experimental Scope support.
-
- // New API for JSX transforms to target - https://github.com/reactjs/rfcs/pull/107
-
- // We will enforce mocking scheduler with scheduler/unstable_mock at some point. (v17?)
-// Till then, we warn about the missing mock, but still fallback to a sync mode compatible version
-
- // For tests, we flush suspense fallbacks in an act scope;
-// *except* in some of our own tests, where we test incremental loading states.
-
- // Changes priority of some events like mousemove to user-blocking priority,
-// but without making them discrete. The flag exists in case it causes
-// starvation problems.
-
- // Add a callback property to suspense to notify which promises are currently
-// in the update queue. This allows reporting and tracing of what is causing
-// the user to see a loading state.
-// Also allows hydration callbacks to fire when a dehydrated boundary gets
-// hydrated or deleted.
-
- // Part of the simplification of React.createElement so we can eventually move
-// from React.createElement to React.jsx
-// https://github.com/reactjs/rfcs/blob/createlement-rfc/text/0000-create-element-changes.md
-
-var DEFAULT_THREAD_ID = 0; // Counters used to generate unique IDs.
-
-var interactionIDCounter = 0;
-var threadIDCounter = 0; // Set of currently traced interactions.
-// Interactions "stack"–
-// Meaning that newly traced interactions are appended to the previously active set.
-// When an interaction goes out of scope, the previous set (if any) is restored.
-
-exports.__interactionsRef = null; // Listener(s) to notify when interactions begin and end.
-
-exports.__subscriberRef = null;
-
-if (enableSchedulerTracing) {
-  exports.__interactionsRef = {
-    current: new Set()
-  };
-  exports.__subscriberRef = {
-    current: null
-  };
-}
-
-function unstable_clear(callback) {
-  if (!enableSchedulerTracing) {
-    return callback();
-  }
-
-  var prevInteractions = exports.__interactionsRef.current;
-  exports.__interactionsRef.current = new Set();
-
-  try {
-    return callback();
-  } finally {
-    exports.__interactionsRef.current = prevInteractions;
-  }
-}
-function unstable_getCurrent() {
-  if (!enableSchedulerTracing) {
-    return null;
-  } else {
-    return exports.__interactionsRef.current;
-  }
-}
-function unstable_getThreadID() {
-  return ++threadIDCounter;
-}
-function unstable_trace(name, timestamp, callback) {
-  var threadID = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : DEFAULT_THREAD_ID;
-
-  if (!enableSchedulerTracing) {
-    return callback();
-  }
-
-  var interaction = {
-    __count: 1,
-    id: interactionIDCounter++,
-    name: name,
-    timestamp: timestamp
-  };
-  var prevInteractions = exports.__interactionsRef.current; // Traced interactions should stack/accumulate.
-  // To do that, clone the current interactions.
-  // The previous set will be restored upon completion.
-
-  var interactions = new Set(prevInteractions);
-  interactions.add(interaction);
-  exports.__interactionsRef.current = interactions;
-  var subscriber = exports.__subscriberRef.current;
-  var returnValue;
-
-  try {
-    if (subscriber !== null) {
-      subscriber.onInteractionTraced(interaction);
-    }
-  } finally {
-    try {
-      if (subscriber !== null) {
-        subscriber.onWorkStarted(interactions, threadID);
-      }
-    } finally {
-      try {
-        returnValue = callback();
-      } finally {
-        exports.__interactionsRef.current = prevInteractions;
-
-        try {
-          if (subscriber !== null) {
-            subscriber.onWorkStopped(interactions, threadID);
-          }
-        } finally {
-          interaction.__count--; // If no async work was scheduled for this interaction,
-          // Notify subscribers that it's completed.
-
-          if (subscriber !== null && interaction.__count === 0) {
-            subscriber.onInteractionScheduledWorkCompleted(interaction);
-          }
-        }
-      }
-    }
-  }
-
-  return returnValue;
-}
-function unstable_wrap(callback) {
-  var threadID = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_THREAD_ID;
-
-  if (!enableSchedulerTracing) {
-    return callback;
-  }
-
-  var wrappedInteractions = exports.__interactionsRef.current;
-  var subscriber = exports.__subscriberRef.current;
-
-  if (subscriber !== null) {
-    subscriber.onWorkScheduled(wrappedInteractions, threadID);
-  } // Update the pending async work count for the current interactions.
-  // Update after calling subscribers in case of error.
-
-
-  wrappedInteractions.forEach(function (interaction) {
-    interaction.__count++;
-  });
-  var hasRun = false;
-
-  function wrapped() {
-    var prevInteractions = exports.__interactionsRef.current;
-    exports.__interactionsRef.current = wrappedInteractions;
-    subscriber = exports.__subscriberRef.current;
-
-    try {
-      var returnValue;
-
-      try {
-        if (subscriber !== null) {
-          subscriber.onWorkStarted(wrappedInteractions, threadID);
-        }
-      } finally {
-        try {
-          returnValue = callback.apply(undefined, arguments);
-        } finally {
-          exports.__interactionsRef.current = prevInteractions;
-
-          if (subscriber !== null) {
-            subscriber.onWorkStopped(wrappedInteractions, threadID);
-          }
-        }
-      }
-
-      return returnValue;
-    } finally {
-      if (!hasRun) {
-        // We only expect a wrapped function to be executed once,
-        // But in the event that it's executed more than once–
-        // Only decrement the outstanding interaction counts once.
-        hasRun = true; // Update pending async counts for all wrapped interactions.
-        // If this was the last scheduled async work for any of them,
-        // Mark them as completed.
-
-        wrappedInteractions.forEach(function (interaction) {
-          interaction.__count--;
-
-          if (subscriber !== null && interaction.__count === 0) {
-            subscriber.onInteractionScheduledWorkCompleted(interaction);
-          }
-        });
-      }
-    }
-  }
-
-  wrapped.cancel = function cancel() {
-    subscriber = exports.__subscriberRef.current;
-
-    try {
-      if (subscriber !== null) {
-        subscriber.onWorkCanceled(wrappedInteractions, threadID);
-      }
-    } finally {
-      // Update pending async counts for all wrapped interactions.
-      // If this was the last scheduled async work for any of them,
-      // Mark them as completed.
-      wrappedInteractions.forEach(function (interaction) {
-        interaction.__count--;
-
-        if (subscriber && interaction.__count === 0) {
-          subscriber.onInteractionScheduledWorkCompleted(interaction);
-        }
-      });
-    }
-  };
-
-  return wrapped;
-}
-
-var subscribers = null;
-
-if (enableSchedulerTracing) {
-  subscribers = new Set();
-}
-
-function unstable_subscribe(subscriber) {
-  if (enableSchedulerTracing) {
-    subscribers.add(subscriber);
-
-    if (subscribers.size === 1) {
-      exports.__subscriberRef.current = {
-        onInteractionScheduledWorkCompleted: onInteractionScheduledWorkCompleted,
-        onInteractionTraced: onInteractionTraced,
-        onWorkCanceled: onWorkCanceled,
-        onWorkScheduled: onWorkScheduled,
-        onWorkStarted: onWorkStarted,
-        onWorkStopped: onWorkStopped
-      };
-    }
-  }
-}
-function unstable_unsubscribe(subscriber) {
-  if (enableSchedulerTracing) {
-    subscribers.delete(subscriber);
-
-    if (subscribers.size === 0) {
-      exports.__subscriberRef.current = null;
-    }
-  }
-}
-
-function onInteractionTraced(interaction) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onInteractionTraced(interaction);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-function onInteractionScheduledWorkCompleted(interaction) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onInteractionScheduledWorkCompleted(interaction);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-function onWorkScheduled(interactions, threadID) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onWorkScheduled(interactions, threadID);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-function onWorkStarted(interactions, threadID) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onWorkStarted(interactions, threadID);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-function onWorkStopped(interactions, threadID) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onWorkStopped(interactions, threadID);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-function onWorkCanceled(interactions, threadID) {
-  var didCatchError = false;
-  var caughtError = null;
-  subscribers.forEach(function (subscriber) {
-    try {
-      subscriber.onWorkCanceled(interactions, threadID);
-    } catch (error) {
-      if (!didCatchError) {
-        didCatchError = true;
-        caughtError = error;
-      }
-    }
-  });
-
-  if (didCatchError) {
-    throw caughtError;
-  }
-}
-
-exports.unstable_clear = unstable_clear;
-exports.unstable_getCurrent = unstable_getCurrent;
-exports.unstable_getThreadID = unstable_getThreadID;
-exports.unstable_trace = unstable_trace;
-exports.unstable_wrap = unstable_wrap;
-exports.unstable_subscribe = unstable_subscribe;
-exports.unstable_unsubscribe = unstable_unsubscribe;
-  })();
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js":
-/*!************************************************************************************!*\
-  !*** ./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/** @license React v0.16.1
- * scheduler.development.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-
-
-
-if (true) {
-  (function() {
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var enableSchedulerDebugging = false;
-var enableIsInputPending = false;
-var enableMessageLoopImplementation = true;
-var enableProfiling = true;
-
-// works by scheduling a requestAnimationFrame, storing the time for the start
-// of the frame, then scheduling a postMessage which gets scheduled after paint.
-// Within the postMessage handler do as much work as possible until time + frame
-// rate. By separating the idle call into a separate event tick we ensure that
-// layout, paint and other browser work is counted against the available time.
-// The frame rate is dynamically adjusted.
-
-var requestHostCallback;
-
-var requestHostTimeout;
-var cancelHostTimeout;
-var shouldYieldToHost;
-var requestPaint;
-
-
-
-if ( // If Scheduler runs in a non-DOM environment, it falls back to a naive
-// implementation using setTimeout.
-typeof window === 'undefined' || // Check if MessageChannel is supported, too.
-typeof MessageChannel !== 'function') {
-  // If this accidentally gets imported in a non-browser environment, e.g. JavaScriptCore,
-  // fallback to a naive implementation.
-  var _callback = null;
-  var _timeoutID = null;
-
-  var _flushCallback = function () {
-    if (_callback !== null) {
-      try {
-        var currentTime = exports.unstable_now();
-        var hasRemainingTime = true;
-
-        _callback(hasRemainingTime, currentTime);
-
-        _callback = null;
-      } catch (e) {
-        setTimeout(_flushCallback, 0);
-        throw e;
-      }
-    }
-  };
-
-  var initialTime = Date.now();
-
-  exports.unstable_now = function () {
-    return Date.now() - initialTime;
-  };
-
-  requestHostCallback = function (cb) {
-    if (_callback !== null) {
-      // Protect against re-entrancy.
-      setTimeout(requestHostCallback, 0, cb);
-    } else {
-      _callback = cb;
-      setTimeout(_flushCallback, 0);
-    }
-  };
-
-  requestHostTimeout = function (cb, ms) {
-    _timeoutID = setTimeout(cb, ms);
-  };
-
-  cancelHostTimeout = function () {
-    clearTimeout(_timeoutID);
-  };
-
-  shouldYieldToHost = function () {
-    return false;
-  };
-
-  requestPaint = exports.unstable_forceFrameRate = function () {};
-} else {
-  // Capture local references to native APIs, in case a polyfill overrides them.
-  var performance = window.performance;
-  var _Date = window.Date;
-  var _setTimeout = window.setTimeout;
-  var _clearTimeout = window.clearTimeout;
-  var requestAnimationFrame = window.requestAnimationFrame;
-  var cancelAnimationFrame = window.cancelAnimationFrame;
-
-  if (typeof console !== 'undefined') {
-    // TODO: Remove fb.me link
-    if (typeof requestAnimationFrame !== 'function') {
-      console.error("This browser doesn't support requestAnimationFrame. " + 'Make sure that you load a ' + 'polyfill in older browsers. https://fb.me/react-polyfills');
-    }
-
-    if (typeof cancelAnimationFrame !== 'function') {
-      console.error("This browser doesn't support cancelAnimationFrame. " + 'Make sure that you load a ' + 'polyfill in older browsers. https://fb.me/react-polyfills');
-    }
-  }
-
-  if (typeof performance === 'object' && typeof performance.now === 'function') {
-    exports.unstable_now = function () {
-      return performance.now();
-    };
-  } else {
-    var _initialTime = _Date.now();
-
-    exports.unstable_now = function () {
-      return _Date.now() - _initialTime;
-    };
-  }
-
-  var isRAFLoopRunning = false;
-  var isMessageLoopRunning = false;
-  var scheduledHostCallback = null;
-  var rAFTimeoutID = -1;
-  var taskTimeoutID = -1;
-  var frameLength = enableMessageLoopImplementation ? // We won't attempt to align with the vsync. Instead we'll yield multiple
-  // times per frame, often enough to keep it responsive even at really
-  // high frame rates > 120.
-  5 : // Use a heuristic to measure the frame rate and yield at the end of the
-  // frame. We start out assuming that we run at 30fps but then the
-  // heuristic tracking will adjust this value to a faster fps if we get
-  // more frequent animation frames.
-  33.33;
-  var prevRAFTime = -1;
-  var prevRAFInterval = -1;
-  var frameDeadline = 0;
-  var fpsLocked = false; // TODO: Make this configurable
-  // TODO: Adjust this based on priority?
-
-  var maxFrameLength = 300;
-  var needsPaint = false;
-
-  if (enableIsInputPending && navigator !== undefined && navigator.scheduling !== undefined && navigator.scheduling.isInputPending !== undefined) {
-    var scheduling = navigator.scheduling;
-
-    shouldYieldToHost = function () {
-      var currentTime = exports.unstable_now();
-
-      if (currentTime >= frameDeadline) {
-        // There's no time left in the frame. We may want to yield control of
-        // the main thread, so the browser can perform high priority tasks. The
-        // main ones are painting and user input. If there's a pending paint or
-        // a pending input, then we should yield. But if there's neither, then
-        // we can yield less often while remaining responsive. We'll eventually
-        // yield regardless, since there could be a pending paint that wasn't
-        // accompanied by a call to `requestPaint`, or other main thread tasks
-        // like network events.
-        if (needsPaint || scheduling.isInputPending()) {
-          // There is either a pending paint or a pending input.
-          return true;
-        } // There's no pending input. Only yield if we've reached the max
-        // frame length.
-
-
-        return currentTime >= frameDeadline + maxFrameLength;
-      } else {
-        // There's still time left in the frame.
-        return false;
-      }
-    };
-
-    requestPaint = function () {
-      needsPaint = true;
-    };
-  } else {
-    // `isInputPending` is not available. Since we have no way of knowing if
-    // there's pending input, always yield at the end of the frame.
-    shouldYieldToHost = function () {
-      return exports.unstable_now() >= frameDeadline;
-    }; // Since we yield every frame regardless, `requestPaint` has no effect.
-
-
-    requestPaint = function () {};
-  }
-
-  exports.unstable_forceFrameRate = function (fps) {
-    if (fps < 0 || fps > 125) {
-      console.error('forceFrameRate takes a positive int between 0 and 125, ' + 'forcing framerates higher than 125 fps is not unsupported');
-      return;
-    }
-
-    if (fps > 0) {
-      frameLength = Math.floor(1000 / fps);
-      fpsLocked = true;
-    } else {
-      // reset the framerate
-      frameLength = 33.33;
-      fpsLocked = false;
-    }
-  };
-
-  var performWorkUntilDeadline = function () {
-    if (enableMessageLoopImplementation) {
-      if (scheduledHostCallback !== null) {
-        var currentTime = exports.unstable_now(); // Yield after `frameLength` ms, regardless of where we are in the vsync
-        // cycle. This means there's always time remaining at the beginning of
-        // the message event.
-
-        frameDeadline = currentTime + frameLength;
-        var hasTimeRemaining = true;
-
-        try {
-          var hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
-
-          if (!hasMoreWork) {
-            isMessageLoopRunning = false;
-            scheduledHostCallback = null;
-          } else {
-            // If there's more work, schedule the next message event at the end
-            // of the preceding one.
-            port.postMessage(null);
-          }
-        } catch (error) {
-          // If a scheduler task throws, exit the current browser task so the
-          // error can be observed.
-          port.postMessage(null);
-          throw error;
-        }
-      } else {
-        isMessageLoopRunning = false;
-      } // Yielding to the browser will give it a chance to paint, so we can
-      // reset this.
-
-
-      needsPaint = false;
-    } else {
-      if (scheduledHostCallback !== null) {
-        var _currentTime = exports.unstable_now();
-
-        var _hasTimeRemaining = frameDeadline - _currentTime > 0;
-
-        try {
-          var _hasMoreWork = scheduledHostCallback(_hasTimeRemaining, _currentTime);
-
-          if (!_hasMoreWork) {
-            scheduledHostCallback = null;
-          }
-        } catch (error) {
-          // If a scheduler task throws, exit the current browser task so the
-          // error can be observed, and post a new task as soon as possible
-          // so we can continue where we left off.
-          port.postMessage(null);
-          throw error;
-        }
-      } // Yielding to the browser will give it a chance to paint, so we can
-      // reset this.
-
-
-      needsPaint = false;
-    }
-  };
-
-  var channel = new MessageChannel();
-  var port = channel.port2;
-  channel.port1.onmessage = performWorkUntilDeadline;
-
-  var onAnimationFrame = function (rAFTime) {
-    if (scheduledHostCallback === null) {
-      // No scheduled work. Exit.
-      prevRAFTime = -1;
-      prevRAFInterval = -1;
-      isRAFLoopRunning = false;
-      return;
-    } // Eagerly schedule the next animation callback at the beginning of the
-    // frame. If the scheduler queue is not empty at the end of the frame, it
-    // will continue flushing inside that callback. If the queue *is* empty,
-    // then it will exit immediately. Posting the callback at the start of the
-    // frame ensures it's fired within the earliest possible frame. If we
-    // waited until the end of the frame to post the callback, we risk the
-    // browser skipping a frame and not firing the callback until the frame
-    // after that.
-
-
-    isRAFLoopRunning = true;
-    requestAnimationFrame(function (nextRAFTime) {
-      _clearTimeout(rAFTimeoutID);
-
-      onAnimationFrame(nextRAFTime);
-    }); // requestAnimationFrame is throttled when the tab is backgrounded. We
-    // don't want to stop working entirely. So we'll fallback to a timeout loop.
-    // TODO: Need a better heuristic for backgrounded work.
-
-    var onTimeout = function () {
-      frameDeadline = exports.unstable_now() + frameLength / 2;
-      performWorkUntilDeadline();
-      rAFTimeoutID = _setTimeout(onTimeout, frameLength * 3);
-    };
-
-    rAFTimeoutID = _setTimeout(onTimeout, frameLength * 3);
-
-    if (prevRAFTime !== -1 && // Make sure this rAF time is different from the previous one. This check
-    // could fail if two rAFs fire in the same frame.
-    rAFTime - prevRAFTime > 0.1) {
-      var rAFInterval = rAFTime - prevRAFTime;
-
-      if (!fpsLocked && prevRAFInterval !== -1) {
-        // We've observed two consecutive frame intervals. We'll use this to
-        // dynamically adjust the frame rate.
-        //
-        // If one frame goes long, then the next one can be short to catch up.
-        // If two frames are short in a row, then that's an indication that we
-        // actually have a higher frame rate than what we're currently
-        // optimizing. For example, if we're running on 120hz display or 90hz VR
-        // display. Take the max of the two in case one of them was an anomaly
-        // due to missed frame deadlines.
-        if (rAFInterval < frameLength && prevRAFInterval < frameLength) {
-          frameLength = rAFInterval < prevRAFInterval ? prevRAFInterval : rAFInterval;
-
-          if (frameLength < 8.33) {
-            // Defensive coding. We don't support higher frame rates than 120hz.
-            // If the calculated frame length gets lower than 8, it is probably
-            // a bug.
-            frameLength = 8.33;
-          }
-        }
-      }
-
-      prevRAFInterval = rAFInterval;
-    }
-
-    prevRAFTime = rAFTime;
-    frameDeadline = rAFTime + frameLength; // We use the postMessage trick to defer idle work until after the repaint.
-
-    port.postMessage(null);
-  };
-
-  requestHostCallback = function (callback) {
-    scheduledHostCallback = callback;
-
-    if (enableMessageLoopImplementation) {
-      if (!isMessageLoopRunning) {
-        isMessageLoopRunning = true;
-        port.postMessage(null);
-      }
-    } else {
-      if (!isRAFLoopRunning) {
-        // Start a rAF loop.
-        isRAFLoopRunning = true;
-        requestAnimationFrame(function (rAFTime) {
-          onAnimationFrame(rAFTime);
-        });
-      }
-    }
-  };
-
-  requestHostTimeout = function (callback, ms) {
-    taskTimeoutID = _setTimeout(function () {
-      callback(exports.unstable_now());
-    }, ms);
-  };
-
-  cancelHostTimeout = function () {
-    _clearTimeout(taskTimeoutID);
-
-    taskTimeoutID = -1;
-  };
-}
-
-function push(heap, node) {
-  var index = heap.length;
-  heap.push(node);
-  siftUp(heap, node, index);
-}
-function peek(heap) {
-  var first = heap[0];
-  return first === undefined ? null : first;
-}
-function pop(heap) {
-  var first = heap[0];
-
-  if (first !== undefined) {
-    var last = heap.pop();
-
-    if (last !== first) {
-      heap[0] = last;
-      siftDown(heap, last, 0);
-    }
-
-    return first;
-  } else {
-    return null;
-  }
-}
-
-function siftUp(heap, node, i) {
-  var index = i;
-
-  while (true) {
-    var parentIndex = Math.floor((index - 1) / 2);
-    var parent = heap[parentIndex];
-
-    if (parent !== undefined && compare(parent, node) > 0) {
-      // The parent is larger. Swap positions.
-      heap[parentIndex] = node;
-      heap[index] = parent;
-      index = parentIndex;
-    } else {
-      // The parent is smaller. Exit.
-      return;
-    }
-  }
-}
-
-function siftDown(heap, node, i) {
-  var index = i;
-  var length = heap.length;
-
-  while (index < length) {
-    var leftIndex = (index + 1) * 2 - 1;
-    var left = heap[leftIndex];
-    var rightIndex = leftIndex + 1;
-    var right = heap[rightIndex]; // If the left or right node is smaller, swap with the smaller of those.
-
-    if (left !== undefined && compare(left, node) < 0) {
-      if (right !== undefined && compare(right, left) < 0) {
-        heap[index] = right;
-        heap[rightIndex] = node;
-        index = rightIndex;
-      } else {
-        heap[index] = left;
-        heap[leftIndex] = node;
-        index = leftIndex;
-      }
-    } else if (right !== undefined && compare(right, node) < 0) {
-      heap[index] = right;
-      heap[rightIndex] = node;
-      index = rightIndex;
-    } else {
-      // Neither child is smaller. Exit.
-      return;
-    }
-  }
-}
-
-function compare(a, b) {
-  // Compare sort index first, then task id.
-  var diff = a.sortIndex - b.sortIndex;
-  return diff !== 0 ? diff : a.id - b.id;
-}
-
-// TODO: Use symbols?
-var NoPriority = 0;
-var ImmediatePriority = 1;
-var UserBlockingPriority = 2;
-var NormalPriority = 3;
-var LowPriority = 4;
-var IdlePriority = 5;
-
-var runIdCounter = 0;
-var mainThreadIdCounter = 0;
-var profilingStateSize = 4;
-var sharedProfilingBuffer = enableProfiling ? // $FlowFixMe Flow doesn't know about SharedArrayBuffer
-typeof SharedArrayBuffer === 'function' ? new SharedArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : // $FlowFixMe Flow doesn't know about ArrayBuffer
-typeof ArrayBuffer === 'function' ? new ArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : null // Don't crash the init path on IE9
-: null;
-var profilingState = enableProfiling && sharedProfilingBuffer !== null ? new Int32Array(sharedProfilingBuffer) : []; // We can't read this but it helps save bytes for null checks
-
-var PRIORITY = 0;
-var CURRENT_TASK_ID = 1;
-var CURRENT_RUN_ID = 2;
-var QUEUE_SIZE = 3;
-
-if (enableProfiling) {
-  profilingState[PRIORITY] = NoPriority; // This is maintained with a counter, because the size of the priority queue
-  // array might include canceled tasks.
-
-  profilingState[QUEUE_SIZE] = 0;
-  profilingState[CURRENT_TASK_ID] = 0;
-} // Bytes per element is 4
-
-
-var INITIAL_EVENT_LOG_SIZE = 131072;
-var MAX_EVENT_LOG_SIZE = 524288; // Equivalent to 2 megabytes
-
-var eventLogSize = 0;
-var eventLogBuffer = null;
-var eventLog = null;
-var eventLogIndex = 0;
-var TaskStartEvent = 1;
-var TaskCompleteEvent = 2;
-var TaskErrorEvent = 3;
-var TaskCancelEvent = 4;
-var TaskRunEvent = 5;
-var TaskYieldEvent = 6;
-var SchedulerSuspendEvent = 7;
-var SchedulerResumeEvent = 8;
-
-function logEvent(entries) {
-  if (eventLog !== null) {
-    var offset = eventLogIndex;
-    eventLogIndex += entries.length;
-
-    if (eventLogIndex + 1 > eventLogSize) {
-      eventLogSize *= 2;
-
-      if (eventLogSize > MAX_EVENT_LOG_SIZE) {
-        console.error("Scheduler Profiling: Event log exceeded maximum size. Don't " + 'forget to call `stopLoggingProfilingEvents()`.');
-        stopLoggingProfilingEvents();
-        return;
-      }
-
-      var newEventLog = new Int32Array(eventLogSize * 4);
-      newEventLog.set(eventLog);
-      eventLogBuffer = newEventLog.buffer;
-      eventLog = newEventLog;
-    }
-
-    eventLog.set(entries, offset);
-  }
-}
-
-function startLoggingProfilingEvents() {
-  eventLogSize = INITIAL_EVENT_LOG_SIZE;
-  eventLogBuffer = new ArrayBuffer(eventLogSize * 4);
-  eventLog = new Int32Array(eventLogBuffer);
-  eventLogIndex = 0;
-}
-function stopLoggingProfilingEvents() {
-  var buffer = eventLogBuffer;
-  eventLogSize = 0;
-  eventLogBuffer = null;
-  eventLog = null;
-  eventLogIndex = 0;
-  return buffer;
-}
-function markTaskStart(task, time) {
-  if (enableProfiling) {
-    profilingState[QUEUE_SIZE]++;
-
-    if (eventLog !== null) {
-      logEvent([TaskStartEvent, time, task.id, task.priorityLevel]);
-    }
-  }
-}
-function markTaskCompleted(task, time) {
-  if (enableProfiling) {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskCompleteEvent, time, task.id]);
-    }
-  }
-}
-function markTaskCanceled(task, time) {
-  if (enableProfiling) {
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskCancelEvent, time, task.id]);
-    }
-  }
-}
-function markTaskErrored(task, time) {
-  if (enableProfiling) {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskErrorEvent, time, task.id]);
-    }
-  }
-}
-function markTaskRun(task, time) {
-  if (enableProfiling) {
-    runIdCounter++;
-    profilingState[PRIORITY] = task.priorityLevel;
-    profilingState[CURRENT_TASK_ID] = task.id;
-    profilingState[CURRENT_RUN_ID] = runIdCounter;
-
-    if (eventLog !== null) {
-      logEvent([TaskRunEvent, time, task.id, runIdCounter]);
-    }
-  }
-}
-function markTaskYield(task, time) {
-  if (enableProfiling) {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[CURRENT_RUN_ID] = 0;
-
-    if (eventLog !== null) {
-      logEvent([TaskYieldEvent, time, task.id, runIdCounter]);
-    }
-  }
-}
-function markSchedulerSuspended(time) {
-  if (enableProfiling) {
-    mainThreadIdCounter++;
-
-    if (eventLog !== null) {
-      logEvent([SchedulerSuspendEvent, time, mainThreadIdCounter]);
-    }
-  }
-}
-function markSchedulerUnsuspended(time) {
-  if (enableProfiling) {
-    if (eventLog !== null) {
-      logEvent([SchedulerResumeEvent, time, mainThreadIdCounter]);
-    }
-  }
-}
-
-/* eslint-disable no-var */
-// Math.pow(2, 30) - 1
-// 0b111111111111111111111111111111
-
-var maxSigned31BitInt = 1073741823; // Times out immediately
-
-var IMMEDIATE_PRIORITY_TIMEOUT = -1; // Eventually times out
-
-var USER_BLOCKING_PRIORITY = 250;
-var NORMAL_PRIORITY_TIMEOUT = 5000;
-var LOW_PRIORITY_TIMEOUT = 10000; // Never times out
-
-var IDLE_PRIORITY = maxSigned31BitInt; // Tasks are stored on a min heap
-
-var taskQueue = [];
-var timerQueue = []; // Incrementing id counter. Used to maintain insertion order.
-
-var taskIdCounter = 1; // Pausing the scheduler is useful for debugging.
-
-var isSchedulerPaused = false;
-var currentTask = null;
-var currentPriorityLevel = NormalPriority; // This is set while performing work, to prevent re-entrancy.
-
-var isPerformingWork = false;
-var isHostCallbackScheduled = false;
-var isHostTimeoutScheduled = false;
-
-function advanceTimers(currentTime) {
-  // Check for tasks that are no longer delayed and add them to the queue.
-  var timer = peek(timerQueue);
-
-  while (timer !== null) {
-    if (timer.callback === null) {
-      // Timer was cancelled.
-      pop(timerQueue);
-    } else if (timer.startTime <= currentTime) {
-      // Timer fired. Transfer to the task queue.
-      pop(timerQueue);
-      timer.sortIndex = timer.expirationTime;
-      push(taskQueue, timer);
-
-      if (enableProfiling) {
-        markTaskStart(timer, currentTime);
-        timer.isQueued = true;
-      }
-    } else {
-      // Remaining timers are pending.
-      return;
-    }
-
-    timer = peek(timerQueue);
-  }
-}
-
-function handleTimeout(currentTime) {
-  isHostTimeoutScheduled = false;
-  advanceTimers(currentTime);
-
-  if (!isHostCallbackScheduled) {
-    if (peek(taskQueue) !== null) {
-      isHostCallbackScheduled = true;
-      requestHostCallback(flushWork);
-    } else {
-      var firstTimer = peek(timerQueue);
-
-      if (firstTimer !== null) {
-        requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-      }
-    }
-  }
-}
-
-function flushWork(hasTimeRemaining, initialTime) {
-  if (enableProfiling) {
-    markSchedulerUnsuspended(initialTime);
-  } // We'll need a host callback the next time work is scheduled.
-
-
-  isHostCallbackScheduled = false;
-
-  if (isHostTimeoutScheduled) {
-    // We scheduled a timeout but it's no longer needed. Cancel it.
-    isHostTimeoutScheduled = false;
-    cancelHostTimeout();
-  }
-
-  isPerformingWork = true;
-  var previousPriorityLevel = currentPriorityLevel;
-
-  try {
-    if (enableProfiling) {
-      try {
-        return workLoop(hasTimeRemaining, initialTime);
-      } catch (error) {
-        if (currentTask !== null) {
-          var currentTime = exports.unstable_now();
-          markTaskErrored(currentTask, currentTime);
-          currentTask.isQueued = false;
-        }
-
-        throw error;
-      }
-    } else {
-      // No catch in prod codepath.
-      return workLoop(hasTimeRemaining, initialTime);
-    }
-  } finally {
-    currentTask = null;
-    currentPriorityLevel = previousPriorityLevel;
-    isPerformingWork = false;
-
-    if (enableProfiling) {
-      var _currentTime = exports.unstable_now();
-
-      markSchedulerSuspended(_currentTime);
-    }
-  }
-}
-
-function workLoop(hasTimeRemaining, initialTime) {
-  var currentTime = initialTime;
-  advanceTimers(currentTime);
-  currentTask = peek(taskQueue);
-
-  while (currentTask !== null && !(enableSchedulerDebugging && isSchedulerPaused)) {
-    if (currentTask.expirationTime > currentTime && (!hasTimeRemaining || shouldYieldToHost())) {
-      // This currentTask hasn't expired, and we've reached the deadline.
-      break;
-    }
-
-    var callback = currentTask.callback;
-
-    if (callback !== null) {
-      currentTask.callback = null;
-      currentPriorityLevel = currentTask.priorityLevel;
-      var didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
-      markTaskRun(currentTask, currentTime);
-      var continuationCallback = callback(didUserCallbackTimeout);
-      currentTime = exports.unstable_now();
-
-      if (typeof continuationCallback === 'function') {
-        currentTask.callback = continuationCallback;
-        markTaskYield(currentTask, currentTime);
-      } else {
-        if (enableProfiling) {
-          markTaskCompleted(currentTask, currentTime);
-          currentTask.isQueued = false;
-        }
-
-        if (currentTask === peek(taskQueue)) {
-          pop(taskQueue);
-        }
-      }
-
-      advanceTimers(currentTime);
-    } else {
-      pop(taskQueue);
-    }
-
-    currentTask = peek(taskQueue);
-  } // Return whether there's additional work
-
-
-  if (currentTask !== null) {
-    return true;
-  } else {
-    var firstTimer = peek(timerQueue);
-
-    if (firstTimer !== null) {
-      requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-    }
-
-    return false;
-  }
-}
-
-function unstable_runWithPriority(priorityLevel, eventHandler) {
-  switch (priorityLevel) {
-    case ImmediatePriority:
-    case UserBlockingPriority:
-    case NormalPriority:
-    case LowPriority:
-    case IdlePriority:
-      break;
-
-    default:
-      priorityLevel = NormalPriority;
-  }
-
-  var previousPriorityLevel = currentPriorityLevel;
-  currentPriorityLevel = priorityLevel;
-
-  try {
-    return eventHandler();
-  } finally {
-    currentPriorityLevel = previousPriorityLevel;
-  }
-}
-
-function unstable_next(eventHandler) {
-  var priorityLevel;
-
-  switch (currentPriorityLevel) {
-    case ImmediatePriority:
-    case UserBlockingPriority:
-    case NormalPriority:
-      // Shift down to normal priority
-      priorityLevel = NormalPriority;
-      break;
-
-    default:
-      // Anything lower than normal priority should remain at the current level.
-      priorityLevel = currentPriorityLevel;
-      break;
-  }
-
-  var previousPriorityLevel = currentPriorityLevel;
-  currentPriorityLevel = priorityLevel;
-
-  try {
-    return eventHandler();
-  } finally {
-    currentPriorityLevel = previousPriorityLevel;
-  }
-}
-
-function unstable_wrapCallback(callback) {
-  var parentPriorityLevel = currentPriorityLevel;
-  return function () {
-    // This is a fork of runWithPriority, inlined for performance.
-    var previousPriorityLevel = currentPriorityLevel;
-    currentPriorityLevel = parentPriorityLevel;
-
-    try {
-      return callback.apply(this, arguments);
-    } finally {
-      currentPriorityLevel = previousPriorityLevel;
-    }
-  };
-}
-
-function timeoutForPriorityLevel(priorityLevel) {
-  switch (priorityLevel) {
-    case ImmediatePriority:
-      return IMMEDIATE_PRIORITY_TIMEOUT;
-
-    case UserBlockingPriority:
-      return USER_BLOCKING_PRIORITY;
-
-    case IdlePriority:
-      return IDLE_PRIORITY;
-
-    case LowPriority:
-      return LOW_PRIORITY_TIMEOUT;
-
-    case NormalPriority:
-    default:
-      return NORMAL_PRIORITY_TIMEOUT;
-  }
-}
-
-function unstable_scheduleCallback(priorityLevel, callback, options) {
-  var currentTime = exports.unstable_now();
-  var startTime;
-  var timeout;
-
-  if (typeof options === 'object' && options !== null) {
-    var delay = options.delay;
-
-    if (typeof delay === 'number' && delay > 0) {
-      startTime = currentTime + delay;
-    } else {
-      startTime = currentTime;
-    }
-
-    timeout = typeof options.timeout === 'number' ? options.timeout : timeoutForPriorityLevel(priorityLevel);
-  } else {
-    timeout = timeoutForPriorityLevel(priorityLevel);
-    startTime = currentTime;
-  }
-
-  var expirationTime = startTime + timeout;
-  var newTask = {
-    id: taskIdCounter++,
-    callback: callback,
-    priorityLevel: priorityLevel,
-    startTime: startTime,
-    expirationTime: expirationTime,
-    sortIndex: -1
-  };
-
-  if (enableProfiling) {
-    newTask.isQueued = false;
-  }
-
-  if (startTime > currentTime) {
-    // This is a delayed task.
-    newTask.sortIndex = startTime;
-    push(timerQueue, newTask);
-
-    if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
-      // All tasks are delayed, and this is the task with the earliest delay.
-      if (isHostTimeoutScheduled) {
-        // Cancel an existing timeout.
-        cancelHostTimeout();
-      } else {
-        isHostTimeoutScheduled = true;
-      } // Schedule a timeout.
-
-
-      requestHostTimeout(handleTimeout, startTime - currentTime);
-    }
-  } else {
-    newTask.sortIndex = expirationTime;
-    push(taskQueue, newTask);
-
-    if (enableProfiling) {
-      markTaskStart(newTask, currentTime);
-      newTask.isQueued = true;
-    } // Schedule a host callback, if needed. If we're already performing work,
-    // wait until the next time we yield.
-
-
-    if (!isHostCallbackScheduled && !isPerformingWork) {
-      isHostCallbackScheduled = true;
-      requestHostCallback(flushWork);
-    }
-  }
-
-  return newTask;
-}
-
-function unstable_pauseExecution() {
-  isSchedulerPaused = true;
-}
-
-function unstable_continueExecution() {
-  isSchedulerPaused = false;
-
-  if (!isHostCallbackScheduled && !isPerformingWork) {
-    isHostCallbackScheduled = true;
-    requestHostCallback(flushWork);
-  }
-}
-
-function unstable_getFirstCallbackNode() {
-  return peek(taskQueue);
-}
-
-function unstable_cancelCallback(task) {
-  if (enableProfiling) {
-    if (task.isQueued) {
-      var currentTime = exports.unstable_now();
-      markTaskCanceled(task, currentTime);
-      task.isQueued = false;
-    }
-  } // Null out the callback to indicate the task has been canceled. (Can't
-  // remove from the queue because you can't remove arbitrary nodes from an
-  // array based heap, only the first one.)
-
-
-  task.callback = null;
-}
-
-function unstable_getCurrentPriorityLevel() {
-  return currentPriorityLevel;
-}
-
-function unstable_shouldYield() {
-  var currentTime = exports.unstable_now();
-  advanceTimers(currentTime);
-  var firstTask = peek(taskQueue);
-  return firstTask !== currentTask && currentTask !== null && firstTask !== null && firstTask.callback !== null && firstTask.startTime <= currentTime && firstTask.expirationTime < currentTask.expirationTime || shouldYieldToHost();
-}
-
-var unstable_requestPaint = requestPaint;
-var unstable_Profiling = enableProfiling ? {
-  startLoggingProfilingEvents: startLoggingProfilingEvents,
-  stopLoggingProfilingEvents: stopLoggingProfilingEvents,
-  sharedProfilingBuffer: sharedProfilingBuffer
-} : null;
-
-exports.unstable_ImmediatePriority = ImmediatePriority;
-exports.unstable_UserBlockingPriority = UserBlockingPriority;
-exports.unstable_NormalPriority = NormalPriority;
-exports.unstable_IdlePriority = IdlePriority;
-exports.unstable_LowPriority = LowPriority;
-exports.unstable_runWithPriority = unstable_runWithPriority;
-exports.unstable_next = unstable_next;
-exports.unstable_scheduleCallback = unstable_scheduleCallback;
-exports.unstable_cancelCallback = unstable_cancelCallback;
-exports.unstable_wrapCallback = unstable_wrapCallback;
-exports.unstable_getCurrentPriorityLevel = unstable_getCurrentPriorityLevel;
-exports.unstable_shouldYield = unstable_shouldYield;
-exports.unstable_requestPaint = unstable_requestPaint;
-exports.unstable_continueExecution = unstable_continueExecution;
-exports.unstable_pauseExecution = unstable_pauseExecution;
-exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
-exports.unstable_Profiling = unstable_Profiling;
-  })();
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/react-dom/node_modules/scheduler/index.js":
-/*!****************************************************************!*\
-  !*** ./node_modules/react-dom/node_modules/scheduler/index.js ***!
-  \****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-if (false) {} else {
-  module.exports = __webpack_require__(/*! ./cjs/scheduler.development.js */ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js");
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/react-dom/node_modules/scheduler/tracing.js":
-/*!******************************************************************!*\
-  !*** ./node_modules/react-dom/node_modules/scheduler/tracing.js ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-if (false) {} else {
-  module.exports = __webpack_require__(/*! ./cjs/scheduler-tracing.development.js */ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler-tracing.development.js");
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/react-is/cjs/react-is.development.js":
 /*!***********************************************************!*\
   !*** ./node_modules/react-is/cjs/react-is.development.js ***!
@@ -30735,7 +29226,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.8.6
+/** @license React v16.10.1
  * react-is.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -30757,25 +29248,29 @@ Object.defineProperty(exports, '__esModule', { value: true });
 // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
 var hasSymbol = typeof Symbol === 'function' && Symbol.for;
-
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
 var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
 var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
 var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
 var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+// (unstable) APIs that have been removed. Can we remove the symbols?
+
 var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
 var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
 var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
 var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
 var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
 var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
+var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
 
 function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' ||
-  // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
+  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE);
 }
 
 /**
@@ -30791,12 +29286,11 @@ function isValidElementType(type) {
  * paths. Removing the logging code for production environments will keep the
  * same logic and follow the same code paths.
  */
-
-var lowPriorityWarning = function () {};
+var lowPriorityWarningWithoutStack = function () {};
 
 {
   var printWarning = function (format) {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
@@ -30804,9 +29298,11 @@ var lowPriorityWarning = function () {};
     var message = 'Warning: ' + format.replace(/%s/g, function () {
       return args[argIndex++];
     });
+
     if (typeof console !== 'undefined') {
       console.warn(message);
     }
+
     try {
       // --- Welcome to debugging React ---
       // This error was thrown as a convenience so that you can use this stack
@@ -30815,25 +29311,27 @@ var lowPriorityWarning = function () {};
     } catch (x) {}
   };
 
-  lowPriorityWarning = function (condition, format) {
+  lowPriorityWarningWithoutStack = function (condition, format) {
     if (format === undefined) {
-      throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
+      throw new Error('`lowPriorityWarningWithoutStack(condition, format, ...args)` requires a warning ' + 'message argument');
     }
+
     if (!condition) {
-      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+      for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
         args[_key2 - 2] = arguments[_key2];
       }
 
-      printWarning.apply(undefined, [format].concat(args));
+      printWarning.apply(void 0, [format].concat(args));
     }
   };
 }
 
-var lowPriorityWarning$1 = lowPriorityWarning;
+var lowPriorityWarningWithoutStack$1 = lowPriorityWarningWithoutStack;
 
 function typeOf(object) {
   if (typeof object === 'object' && object !== null) {
     var $$typeof = object.$$typeof;
+
     switch ($$typeof) {
       case REACT_ELEMENT_TYPE:
         var type = object.type;
@@ -30846,6 +29344,7 @@ function typeOf(object) {
           case REACT_STRICT_MODE_TYPE:
           case REACT_SUSPENSE_TYPE:
             return type;
+
           default:
             var $$typeofType = type && type.$$typeof;
 
@@ -30854,10 +29353,13 @@ function typeOf(object) {
               case REACT_FORWARD_REF_TYPE:
               case REACT_PROVIDER_TYPE:
                 return $$typeofType;
+
               default:
                 return $$typeof;
             }
+
         }
+
       case REACT_LAZY_TYPE:
       case REACT_MEMO_TYPE:
       case REACT_PORTAL_TYPE:
@@ -30866,9 +29368,8 @@ function typeOf(object) {
   }
 
   return undefined;
-}
+} // AsyncMode is deprecated along with isAsyncMode
 
-// AsyncMode is deprecated along with isAsyncMode
 var AsyncMode = REACT_ASYNC_MODE_TYPE;
 var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
 var ContextConsumer = REACT_CONTEXT_TYPE;
@@ -30882,17 +29383,16 @@ var Portal = REACT_PORTAL_TYPE;
 var Profiler = REACT_PROFILER_TYPE;
 var StrictMode = REACT_STRICT_MODE_TYPE;
 var Suspense = REACT_SUSPENSE_TYPE;
+var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
 
-var hasWarnedAboutDeprecatedIsAsyncMode = false;
-
-// AsyncMode should be deprecated
 function isAsyncMode(object) {
   {
     if (!hasWarnedAboutDeprecatedIsAsyncMode) {
       hasWarnedAboutDeprecatedIsAsyncMode = true;
-      lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+      lowPriorityWarningWithoutStack$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
     }
   }
+
   return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
 }
 function isConcurrentMode(object) {
@@ -33344,6 +31844,1515 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "./node_modules/scheduler/cjs/scheduler-tracing.development.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/** @license React v0.16.1
+ * scheduler-tracing.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+
+
+if (true) {
+  (function() {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+// Helps identify side effects in begin-phase lifecycle hooks and setState reducers:
+
+ // In some cases, StrictMode should also double-render lifecycles.
+// This can be confusing for tests though,
+// And it can be bad for performance in production.
+// This feature flag can be used to control the behavior:
+
+ // To preserve the "Pause on caught exceptions" behavior of the debugger, we
+// replay the begin phase of a failed component inside invokeGuardedCallback.
+
+ // Warn about deprecated, async-unsafe lifecycles; relates to RFC #6:
+
+ // Gather advanced timing metrics for Profiler subtrees.
+
+ // Trace which interactions trigger each commit.
+
+var enableSchedulerTracing = true; // Only used in www builds.
+
+ // TODO: true? Here it might just be false.
+
+ // Only used in www builds.
+
+ // Only used in www builds.
+
+ // Disable javascript: URL strings in href for XSS protection.
+
+ // React Fire: prevent the value and checked attributes from syncing
+// with their related DOM properties
+
+ // These APIs will no longer be "unstable" in the upcoming 16.7 release,
+// Control this behavior with a flag to support 16.6 minor releases in the meanwhile.
+
+
+ // See https://github.com/react-native-community/discussions-and-proposals/issues/72 for more information
+// This is a flag so we can fix warnings in RN core before turning it on
+
+ // Experimental React Flare event system and event components support.
+
+ // Experimental Host Component support.
+
+ // Experimental Scope support.
+
+ // New API for JSX transforms to target - https://github.com/reactjs/rfcs/pull/107
+
+ // We will enforce mocking scheduler with scheduler/unstable_mock at some point. (v17?)
+// Till then, we warn about the missing mock, but still fallback to a sync mode compatible version
+
+ // For tests, we flush suspense fallbacks in an act scope;
+// *except* in some of our own tests, where we test incremental loading states.
+
+ // Changes priority of some events like mousemove to user-blocking priority,
+// but without making them discrete. The flag exists in case it causes
+// starvation problems.
+
+ // Add a callback property to suspense to notify which promises are currently
+// in the update queue. This allows reporting and tracing of what is causing
+// the user to see a loading state.
+// Also allows hydration callbacks to fire when a dehydrated boundary gets
+// hydrated or deleted.
+
+ // Part of the simplification of React.createElement so we can eventually move
+// from React.createElement to React.jsx
+// https://github.com/reactjs/rfcs/blob/createlement-rfc/text/0000-create-element-changes.md
+
+var DEFAULT_THREAD_ID = 0; // Counters used to generate unique IDs.
+
+var interactionIDCounter = 0;
+var threadIDCounter = 0; // Set of currently traced interactions.
+// Interactions "stack"–
+// Meaning that newly traced interactions are appended to the previously active set.
+// When an interaction goes out of scope, the previous set (if any) is restored.
+
+exports.__interactionsRef = null; // Listener(s) to notify when interactions begin and end.
+
+exports.__subscriberRef = null;
+
+if (enableSchedulerTracing) {
+  exports.__interactionsRef = {
+    current: new Set()
+  };
+  exports.__subscriberRef = {
+    current: null
+  };
+}
+
+function unstable_clear(callback) {
+  if (!enableSchedulerTracing) {
+    return callback();
+  }
+
+  var prevInteractions = exports.__interactionsRef.current;
+  exports.__interactionsRef.current = new Set();
+
+  try {
+    return callback();
+  } finally {
+    exports.__interactionsRef.current = prevInteractions;
+  }
+}
+function unstable_getCurrent() {
+  if (!enableSchedulerTracing) {
+    return null;
+  } else {
+    return exports.__interactionsRef.current;
+  }
+}
+function unstable_getThreadID() {
+  return ++threadIDCounter;
+}
+function unstable_trace(name, timestamp, callback) {
+  var threadID = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : DEFAULT_THREAD_ID;
+
+  if (!enableSchedulerTracing) {
+    return callback();
+  }
+
+  var interaction = {
+    __count: 1,
+    id: interactionIDCounter++,
+    name: name,
+    timestamp: timestamp
+  };
+  var prevInteractions = exports.__interactionsRef.current; // Traced interactions should stack/accumulate.
+  // To do that, clone the current interactions.
+  // The previous set will be restored upon completion.
+
+  var interactions = new Set(prevInteractions);
+  interactions.add(interaction);
+  exports.__interactionsRef.current = interactions;
+  var subscriber = exports.__subscriberRef.current;
+  var returnValue;
+
+  try {
+    if (subscriber !== null) {
+      subscriber.onInteractionTraced(interaction);
+    }
+  } finally {
+    try {
+      if (subscriber !== null) {
+        subscriber.onWorkStarted(interactions, threadID);
+      }
+    } finally {
+      try {
+        returnValue = callback();
+      } finally {
+        exports.__interactionsRef.current = prevInteractions;
+
+        try {
+          if (subscriber !== null) {
+            subscriber.onWorkStopped(interactions, threadID);
+          }
+        } finally {
+          interaction.__count--; // If no async work was scheduled for this interaction,
+          // Notify subscribers that it's completed.
+
+          if (subscriber !== null && interaction.__count === 0) {
+            subscriber.onInteractionScheduledWorkCompleted(interaction);
+          }
+        }
+      }
+    }
+  }
+
+  return returnValue;
+}
+function unstable_wrap(callback) {
+  var threadID = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_THREAD_ID;
+
+  if (!enableSchedulerTracing) {
+    return callback;
+  }
+
+  var wrappedInteractions = exports.__interactionsRef.current;
+  var subscriber = exports.__subscriberRef.current;
+
+  if (subscriber !== null) {
+    subscriber.onWorkScheduled(wrappedInteractions, threadID);
+  } // Update the pending async work count for the current interactions.
+  // Update after calling subscribers in case of error.
+
+
+  wrappedInteractions.forEach(function (interaction) {
+    interaction.__count++;
+  });
+  var hasRun = false;
+
+  function wrapped() {
+    var prevInteractions = exports.__interactionsRef.current;
+    exports.__interactionsRef.current = wrappedInteractions;
+    subscriber = exports.__subscriberRef.current;
+
+    try {
+      var returnValue;
+
+      try {
+        if (subscriber !== null) {
+          subscriber.onWorkStarted(wrappedInteractions, threadID);
+        }
+      } finally {
+        try {
+          returnValue = callback.apply(undefined, arguments);
+        } finally {
+          exports.__interactionsRef.current = prevInteractions;
+
+          if (subscriber !== null) {
+            subscriber.onWorkStopped(wrappedInteractions, threadID);
+          }
+        }
+      }
+
+      return returnValue;
+    } finally {
+      if (!hasRun) {
+        // We only expect a wrapped function to be executed once,
+        // But in the event that it's executed more than once–
+        // Only decrement the outstanding interaction counts once.
+        hasRun = true; // Update pending async counts for all wrapped interactions.
+        // If this was the last scheduled async work for any of them,
+        // Mark them as completed.
+
+        wrappedInteractions.forEach(function (interaction) {
+          interaction.__count--;
+
+          if (subscriber !== null && interaction.__count === 0) {
+            subscriber.onInteractionScheduledWorkCompleted(interaction);
+          }
+        });
+      }
+    }
+  }
+
+  wrapped.cancel = function cancel() {
+    subscriber = exports.__subscriberRef.current;
+
+    try {
+      if (subscriber !== null) {
+        subscriber.onWorkCanceled(wrappedInteractions, threadID);
+      }
+    } finally {
+      // Update pending async counts for all wrapped interactions.
+      // If this was the last scheduled async work for any of them,
+      // Mark them as completed.
+      wrappedInteractions.forEach(function (interaction) {
+        interaction.__count--;
+
+        if (subscriber && interaction.__count === 0) {
+          subscriber.onInteractionScheduledWorkCompleted(interaction);
+        }
+      });
+    }
+  };
+
+  return wrapped;
+}
+
+var subscribers = null;
+
+if (enableSchedulerTracing) {
+  subscribers = new Set();
+}
+
+function unstable_subscribe(subscriber) {
+  if (enableSchedulerTracing) {
+    subscribers.add(subscriber);
+
+    if (subscribers.size === 1) {
+      exports.__subscriberRef.current = {
+        onInteractionScheduledWorkCompleted: onInteractionScheduledWorkCompleted,
+        onInteractionTraced: onInteractionTraced,
+        onWorkCanceled: onWorkCanceled,
+        onWorkScheduled: onWorkScheduled,
+        onWorkStarted: onWorkStarted,
+        onWorkStopped: onWorkStopped
+      };
+    }
+  }
+}
+function unstable_unsubscribe(subscriber) {
+  if (enableSchedulerTracing) {
+    subscribers.delete(subscriber);
+
+    if (subscribers.size === 0) {
+      exports.__subscriberRef.current = null;
+    }
+  }
+}
+
+function onInteractionTraced(interaction) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onInteractionTraced(interaction);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+function onInteractionScheduledWorkCompleted(interaction) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onInteractionScheduledWorkCompleted(interaction);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+function onWorkScheduled(interactions, threadID) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onWorkScheduled(interactions, threadID);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+function onWorkStarted(interactions, threadID) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onWorkStarted(interactions, threadID);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+function onWorkStopped(interactions, threadID) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onWorkStopped(interactions, threadID);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+function onWorkCanceled(interactions, threadID) {
+  var didCatchError = false;
+  var caughtError = null;
+  subscribers.forEach(function (subscriber) {
+    try {
+      subscriber.onWorkCanceled(interactions, threadID);
+    } catch (error) {
+      if (!didCatchError) {
+        didCatchError = true;
+        caughtError = error;
+      }
+    }
+  });
+
+  if (didCatchError) {
+    throw caughtError;
+  }
+}
+
+exports.unstable_clear = unstable_clear;
+exports.unstable_getCurrent = unstable_getCurrent;
+exports.unstable_getThreadID = unstable_getThreadID;
+exports.unstable_trace = unstable_trace;
+exports.unstable_wrap = unstable_wrap;
+exports.unstable_subscribe = unstable_subscribe;
+exports.unstable_unsubscribe = unstable_unsubscribe;
+  })();
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/scheduler/cjs/scheduler.development.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/** @license React v0.16.1
+ * scheduler.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+
+
+if (true) {
+  (function() {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var enableSchedulerDebugging = false;
+var enableIsInputPending = false;
+var enableMessageLoopImplementation = true;
+var enableProfiling = true;
+
+// works by scheduling a requestAnimationFrame, storing the time for the start
+// of the frame, then scheduling a postMessage which gets scheduled after paint.
+// Within the postMessage handler do as much work as possible until time + frame
+// rate. By separating the idle call into a separate event tick we ensure that
+// layout, paint and other browser work is counted against the available time.
+// The frame rate is dynamically adjusted.
+
+var requestHostCallback;
+
+var requestHostTimeout;
+var cancelHostTimeout;
+var shouldYieldToHost;
+var requestPaint;
+
+
+
+if ( // If Scheduler runs in a non-DOM environment, it falls back to a naive
+// implementation using setTimeout.
+typeof window === 'undefined' || // Check if MessageChannel is supported, too.
+typeof MessageChannel !== 'function') {
+  // If this accidentally gets imported in a non-browser environment, e.g. JavaScriptCore,
+  // fallback to a naive implementation.
+  var _callback = null;
+  var _timeoutID = null;
+
+  var _flushCallback = function () {
+    if (_callback !== null) {
+      try {
+        var currentTime = exports.unstable_now();
+        var hasRemainingTime = true;
+
+        _callback(hasRemainingTime, currentTime);
+
+        _callback = null;
+      } catch (e) {
+        setTimeout(_flushCallback, 0);
+        throw e;
+      }
+    }
+  };
+
+  var initialTime = Date.now();
+
+  exports.unstable_now = function () {
+    return Date.now() - initialTime;
+  };
+
+  requestHostCallback = function (cb) {
+    if (_callback !== null) {
+      // Protect against re-entrancy.
+      setTimeout(requestHostCallback, 0, cb);
+    } else {
+      _callback = cb;
+      setTimeout(_flushCallback, 0);
+    }
+  };
+
+  requestHostTimeout = function (cb, ms) {
+    _timeoutID = setTimeout(cb, ms);
+  };
+
+  cancelHostTimeout = function () {
+    clearTimeout(_timeoutID);
+  };
+
+  shouldYieldToHost = function () {
+    return false;
+  };
+
+  requestPaint = exports.unstable_forceFrameRate = function () {};
+} else {
+  // Capture local references to native APIs, in case a polyfill overrides them.
+  var performance = window.performance;
+  var _Date = window.Date;
+  var _setTimeout = window.setTimeout;
+  var _clearTimeout = window.clearTimeout;
+  var requestAnimationFrame = window.requestAnimationFrame;
+  var cancelAnimationFrame = window.cancelAnimationFrame;
+
+  if (typeof console !== 'undefined') {
+    // TODO: Remove fb.me link
+    if (typeof requestAnimationFrame !== 'function') {
+      console.error("This browser doesn't support requestAnimationFrame. " + 'Make sure that you load a ' + 'polyfill in older browsers. https://fb.me/react-polyfills');
+    }
+
+    if (typeof cancelAnimationFrame !== 'function') {
+      console.error("This browser doesn't support cancelAnimationFrame. " + 'Make sure that you load a ' + 'polyfill in older browsers. https://fb.me/react-polyfills');
+    }
+  }
+
+  if (typeof performance === 'object' && typeof performance.now === 'function') {
+    exports.unstable_now = function () {
+      return performance.now();
+    };
+  } else {
+    var _initialTime = _Date.now();
+
+    exports.unstable_now = function () {
+      return _Date.now() - _initialTime;
+    };
+  }
+
+  var isRAFLoopRunning = false;
+  var isMessageLoopRunning = false;
+  var scheduledHostCallback = null;
+  var rAFTimeoutID = -1;
+  var taskTimeoutID = -1;
+  var frameLength = enableMessageLoopImplementation ? // We won't attempt to align with the vsync. Instead we'll yield multiple
+  // times per frame, often enough to keep it responsive even at really
+  // high frame rates > 120.
+  5 : // Use a heuristic to measure the frame rate and yield at the end of the
+  // frame. We start out assuming that we run at 30fps but then the
+  // heuristic tracking will adjust this value to a faster fps if we get
+  // more frequent animation frames.
+  33.33;
+  var prevRAFTime = -1;
+  var prevRAFInterval = -1;
+  var frameDeadline = 0;
+  var fpsLocked = false; // TODO: Make this configurable
+  // TODO: Adjust this based on priority?
+
+  var maxFrameLength = 300;
+  var needsPaint = false;
+
+  if (enableIsInputPending && navigator !== undefined && navigator.scheduling !== undefined && navigator.scheduling.isInputPending !== undefined) {
+    var scheduling = navigator.scheduling;
+
+    shouldYieldToHost = function () {
+      var currentTime = exports.unstable_now();
+
+      if (currentTime >= frameDeadline) {
+        // There's no time left in the frame. We may want to yield control of
+        // the main thread, so the browser can perform high priority tasks. The
+        // main ones are painting and user input. If there's a pending paint or
+        // a pending input, then we should yield. But if there's neither, then
+        // we can yield less often while remaining responsive. We'll eventually
+        // yield regardless, since there could be a pending paint that wasn't
+        // accompanied by a call to `requestPaint`, or other main thread tasks
+        // like network events.
+        if (needsPaint || scheduling.isInputPending()) {
+          // There is either a pending paint or a pending input.
+          return true;
+        } // There's no pending input. Only yield if we've reached the max
+        // frame length.
+
+
+        return currentTime >= frameDeadline + maxFrameLength;
+      } else {
+        // There's still time left in the frame.
+        return false;
+      }
+    };
+
+    requestPaint = function () {
+      needsPaint = true;
+    };
+  } else {
+    // `isInputPending` is not available. Since we have no way of knowing if
+    // there's pending input, always yield at the end of the frame.
+    shouldYieldToHost = function () {
+      return exports.unstable_now() >= frameDeadline;
+    }; // Since we yield every frame regardless, `requestPaint` has no effect.
+
+
+    requestPaint = function () {};
+  }
+
+  exports.unstable_forceFrameRate = function (fps) {
+    if (fps < 0 || fps > 125) {
+      console.error('forceFrameRate takes a positive int between 0 and 125, ' + 'forcing framerates higher than 125 fps is not unsupported');
+      return;
+    }
+
+    if (fps > 0) {
+      frameLength = Math.floor(1000 / fps);
+      fpsLocked = true;
+    } else {
+      // reset the framerate
+      frameLength = 33.33;
+      fpsLocked = false;
+    }
+  };
+
+  var performWorkUntilDeadline = function () {
+    if (enableMessageLoopImplementation) {
+      if (scheduledHostCallback !== null) {
+        var currentTime = exports.unstable_now(); // Yield after `frameLength` ms, regardless of where we are in the vsync
+        // cycle. This means there's always time remaining at the beginning of
+        // the message event.
+
+        frameDeadline = currentTime + frameLength;
+        var hasTimeRemaining = true;
+
+        try {
+          var hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
+
+          if (!hasMoreWork) {
+            isMessageLoopRunning = false;
+            scheduledHostCallback = null;
+          } else {
+            // If there's more work, schedule the next message event at the end
+            // of the preceding one.
+            port.postMessage(null);
+          }
+        } catch (error) {
+          // If a scheduler task throws, exit the current browser task so the
+          // error can be observed.
+          port.postMessage(null);
+          throw error;
+        }
+      } else {
+        isMessageLoopRunning = false;
+      } // Yielding to the browser will give it a chance to paint, so we can
+      // reset this.
+
+
+      needsPaint = false;
+    } else {
+      if (scheduledHostCallback !== null) {
+        var _currentTime = exports.unstable_now();
+
+        var _hasTimeRemaining = frameDeadline - _currentTime > 0;
+
+        try {
+          var _hasMoreWork = scheduledHostCallback(_hasTimeRemaining, _currentTime);
+
+          if (!_hasMoreWork) {
+            scheduledHostCallback = null;
+          }
+        } catch (error) {
+          // If a scheduler task throws, exit the current browser task so the
+          // error can be observed, and post a new task as soon as possible
+          // so we can continue where we left off.
+          port.postMessage(null);
+          throw error;
+        }
+      } // Yielding to the browser will give it a chance to paint, so we can
+      // reset this.
+
+
+      needsPaint = false;
+    }
+  };
+
+  var channel = new MessageChannel();
+  var port = channel.port2;
+  channel.port1.onmessage = performWorkUntilDeadline;
+
+  var onAnimationFrame = function (rAFTime) {
+    if (scheduledHostCallback === null) {
+      // No scheduled work. Exit.
+      prevRAFTime = -1;
+      prevRAFInterval = -1;
+      isRAFLoopRunning = false;
+      return;
+    } // Eagerly schedule the next animation callback at the beginning of the
+    // frame. If the scheduler queue is not empty at the end of the frame, it
+    // will continue flushing inside that callback. If the queue *is* empty,
+    // then it will exit immediately. Posting the callback at the start of the
+    // frame ensures it's fired within the earliest possible frame. If we
+    // waited until the end of the frame to post the callback, we risk the
+    // browser skipping a frame and not firing the callback until the frame
+    // after that.
+
+
+    isRAFLoopRunning = true;
+    requestAnimationFrame(function (nextRAFTime) {
+      _clearTimeout(rAFTimeoutID);
+
+      onAnimationFrame(nextRAFTime);
+    }); // requestAnimationFrame is throttled when the tab is backgrounded. We
+    // don't want to stop working entirely. So we'll fallback to a timeout loop.
+    // TODO: Need a better heuristic for backgrounded work.
+
+    var onTimeout = function () {
+      frameDeadline = exports.unstable_now() + frameLength / 2;
+      performWorkUntilDeadline();
+      rAFTimeoutID = _setTimeout(onTimeout, frameLength * 3);
+    };
+
+    rAFTimeoutID = _setTimeout(onTimeout, frameLength * 3);
+
+    if (prevRAFTime !== -1 && // Make sure this rAF time is different from the previous one. This check
+    // could fail if two rAFs fire in the same frame.
+    rAFTime - prevRAFTime > 0.1) {
+      var rAFInterval = rAFTime - prevRAFTime;
+
+      if (!fpsLocked && prevRAFInterval !== -1) {
+        // We've observed two consecutive frame intervals. We'll use this to
+        // dynamically adjust the frame rate.
+        //
+        // If one frame goes long, then the next one can be short to catch up.
+        // If two frames are short in a row, then that's an indication that we
+        // actually have a higher frame rate than what we're currently
+        // optimizing. For example, if we're running on 120hz display or 90hz VR
+        // display. Take the max of the two in case one of them was an anomaly
+        // due to missed frame deadlines.
+        if (rAFInterval < frameLength && prevRAFInterval < frameLength) {
+          frameLength = rAFInterval < prevRAFInterval ? prevRAFInterval : rAFInterval;
+
+          if (frameLength < 8.33) {
+            // Defensive coding. We don't support higher frame rates than 120hz.
+            // If the calculated frame length gets lower than 8, it is probably
+            // a bug.
+            frameLength = 8.33;
+          }
+        }
+      }
+
+      prevRAFInterval = rAFInterval;
+    }
+
+    prevRAFTime = rAFTime;
+    frameDeadline = rAFTime + frameLength; // We use the postMessage trick to defer idle work until after the repaint.
+
+    port.postMessage(null);
+  };
+
+  requestHostCallback = function (callback) {
+    scheduledHostCallback = callback;
+
+    if (enableMessageLoopImplementation) {
+      if (!isMessageLoopRunning) {
+        isMessageLoopRunning = true;
+        port.postMessage(null);
+      }
+    } else {
+      if (!isRAFLoopRunning) {
+        // Start a rAF loop.
+        isRAFLoopRunning = true;
+        requestAnimationFrame(function (rAFTime) {
+          onAnimationFrame(rAFTime);
+        });
+      }
+    }
+  };
+
+  requestHostTimeout = function (callback, ms) {
+    taskTimeoutID = _setTimeout(function () {
+      callback(exports.unstable_now());
+    }, ms);
+  };
+
+  cancelHostTimeout = function () {
+    _clearTimeout(taskTimeoutID);
+
+    taskTimeoutID = -1;
+  };
+}
+
+function push(heap, node) {
+  var index = heap.length;
+  heap.push(node);
+  siftUp(heap, node, index);
+}
+function peek(heap) {
+  var first = heap[0];
+  return first === undefined ? null : first;
+}
+function pop(heap) {
+  var first = heap[0];
+
+  if (first !== undefined) {
+    var last = heap.pop();
+
+    if (last !== first) {
+      heap[0] = last;
+      siftDown(heap, last, 0);
+    }
+
+    return first;
+  } else {
+    return null;
+  }
+}
+
+function siftUp(heap, node, i) {
+  var index = i;
+
+  while (true) {
+    var parentIndex = Math.floor((index - 1) / 2);
+    var parent = heap[parentIndex];
+
+    if (parent !== undefined && compare(parent, node) > 0) {
+      // The parent is larger. Swap positions.
+      heap[parentIndex] = node;
+      heap[index] = parent;
+      index = parentIndex;
+    } else {
+      // The parent is smaller. Exit.
+      return;
+    }
+  }
+}
+
+function siftDown(heap, node, i) {
+  var index = i;
+  var length = heap.length;
+
+  while (index < length) {
+    var leftIndex = (index + 1) * 2 - 1;
+    var left = heap[leftIndex];
+    var rightIndex = leftIndex + 1;
+    var right = heap[rightIndex]; // If the left or right node is smaller, swap with the smaller of those.
+
+    if (left !== undefined && compare(left, node) < 0) {
+      if (right !== undefined && compare(right, left) < 0) {
+        heap[index] = right;
+        heap[rightIndex] = node;
+        index = rightIndex;
+      } else {
+        heap[index] = left;
+        heap[leftIndex] = node;
+        index = leftIndex;
+      }
+    } else if (right !== undefined && compare(right, node) < 0) {
+      heap[index] = right;
+      heap[rightIndex] = node;
+      index = rightIndex;
+    } else {
+      // Neither child is smaller. Exit.
+      return;
+    }
+  }
+}
+
+function compare(a, b) {
+  // Compare sort index first, then task id.
+  var diff = a.sortIndex - b.sortIndex;
+  return diff !== 0 ? diff : a.id - b.id;
+}
+
+// TODO: Use symbols?
+var NoPriority = 0;
+var ImmediatePriority = 1;
+var UserBlockingPriority = 2;
+var NormalPriority = 3;
+var LowPriority = 4;
+var IdlePriority = 5;
+
+var runIdCounter = 0;
+var mainThreadIdCounter = 0;
+var profilingStateSize = 4;
+var sharedProfilingBuffer = enableProfiling ? // $FlowFixMe Flow doesn't know about SharedArrayBuffer
+typeof SharedArrayBuffer === 'function' ? new SharedArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : // $FlowFixMe Flow doesn't know about ArrayBuffer
+typeof ArrayBuffer === 'function' ? new ArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : null // Don't crash the init path on IE9
+: null;
+var profilingState = enableProfiling && sharedProfilingBuffer !== null ? new Int32Array(sharedProfilingBuffer) : []; // We can't read this but it helps save bytes for null checks
+
+var PRIORITY = 0;
+var CURRENT_TASK_ID = 1;
+var CURRENT_RUN_ID = 2;
+var QUEUE_SIZE = 3;
+
+if (enableProfiling) {
+  profilingState[PRIORITY] = NoPriority; // This is maintained with a counter, because the size of the priority queue
+  // array might include canceled tasks.
+
+  profilingState[QUEUE_SIZE] = 0;
+  profilingState[CURRENT_TASK_ID] = 0;
+} // Bytes per element is 4
+
+
+var INITIAL_EVENT_LOG_SIZE = 131072;
+var MAX_EVENT_LOG_SIZE = 524288; // Equivalent to 2 megabytes
+
+var eventLogSize = 0;
+var eventLogBuffer = null;
+var eventLog = null;
+var eventLogIndex = 0;
+var TaskStartEvent = 1;
+var TaskCompleteEvent = 2;
+var TaskErrorEvent = 3;
+var TaskCancelEvent = 4;
+var TaskRunEvent = 5;
+var TaskYieldEvent = 6;
+var SchedulerSuspendEvent = 7;
+var SchedulerResumeEvent = 8;
+
+function logEvent(entries) {
+  if (eventLog !== null) {
+    var offset = eventLogIndex;
+    eventLogIndex += entries.length;
+
+    if (eventLogIndex + 1 > eventLogSize) {
+      eventLogSize *= 2;
+
+      if (eventLogSize > MAX_EVENT_LOG_SIZE) {
+        console.error("Scheduler Profiling: Event log exceeded maximum size. Don't " + 'forget to call `stopLoggingProfilingEvents()`.');
+        stopLoggingProfilingEvents();
+        return;
+      }
+
+      var newEventLog = new Int32Array(eventLogSize * 4);
+      newEventLog.set(eventLog);
+      eventLogBuffer = newEventLog.buffer;
+      eventLog = newEventLog;
+    }
+
+    eventLog.set(entries, offset);
+  }
+}
+
+function startLoggingProfilingEvents() {
+  eventLogSize = INITIAL_EVENT_LOG_SIZE;
+  eventLogBuffer = new ArrayBuffer(eventLogSize * 4);
+  eventLog = new Int32Array(eventLogBuffer);
+  eventLogIndex = 0;
+}
+function stopLoggingProfilingEvents() {
+  var buffer = eventLogBuffer;
+  eventLogSize = 0;
+  eventLogBuffer = null;
+  eventLog = null;
+  eventLogIndex = 0;
+  return buffer;
+}
+function markTaskStart(task, time) {
+  if (enableProfiling) {
+    profilingState[QUEUE_SIZE]++;
+
+    if (eventLog !== null) {
+      logEvent([TaskStartEvent, time, task.id, task.priorityLevel]);
+    }
+  }
+}
+function markTaskCompleted(task, time) {
+  if (enableProfiling) {
+    profilingState[PRIORITY] = NoPriority;
+    profilingState[CURRENT_TASK_ID] = 0;
+    profilingState[QUEUE_SIZE]--;
+
+    if (eventLog !== null) {
+      logEvent([TaskCompleteEvent, time, task.id]);
+    }
+  }
+}
+function markTaskCanceled(task, time) {
+  if (enableProfiling) {
+    profilingState[QUEUE_SIZE]--;
+
+    if (eventLog !== null) {
+      logEvent([TaskCancelEvent, time, task.id]);
+    }
+  }
+}
+function markTaskErrored(task, time) {
+  if (enableProfiling) {
+    profilingState[PRIORITY] = NoPriority;
+    profilingState[CURRENT_TASK_ID] = 0;
+    profilingState[QUEUE_SIZE]--;
+
+    if (eventLog !== null) {
+      logEvent([TaskErrorEvent, time, task.id]);
+    }
+  }
+}
+function markTaskRun(task, time) {
+  if (enableProfiling) {
+    runIdCounter++;
+    profilingState[PRIORITY] = task.priorityLevel;
+    profilingState[CURRENT_TASK_ID] = task.id;
+    profilingState[CURRENT_RUN_ID] = runIdCounter;
+
+    if (eventLog !== null) {
+      logEvent([TaskRunEvent, time, task.id, runIdCounter]);
+    }
+  }
+}
+function markTaskYield(task, time) {
+  if (enableProfiling) {
+    profilingState[PRIORITY] = NoPriority;
+    profilingState[CURRENT_TASK_ID] = 0;
+    profilingState[CURRENT_RUN_ID] = 0;
+
+    if (eventLog !== null) {
+      logEvent([TaskYieldEvent, time, task.id, runIdCounter]);
+    }
+  }
+}
+function markSchedulerSuspended(time) {
+  if (enableProfiling) {
+    mainThreadIdCounter++;
+
+    if (eventLog !== null) {
+      logEvent([SchedulerSuspendEvent, time, mainThreadIdCounter]);
+    }
+  }
+}
+function markSchedulerUnsuspended(time) {
+  if (enableProfiling) {
+    if (eventLog !== null) {
+      logEvent([SchedulerResumeEvent, time, mainThreadIdCounter]);
+    }
+  }
+}
+
+/* eslint-disable no-var */
+// Math.pow(2, 30) - 1
+// 0b111111111111111111111111111111
+
+var maxSigned31BitInt = 1073741823; // Times out immediately
+
+var IMMEDIATE_PRIORITY_TIMEOUT = -1; // Eventually times out
+
+var USER_BLOCKING_PRIORITY = 250;
+var NORMAL_PRIORITY_TIMEOUT = 5000;
+var LOW_PRIORITY_TIMEOUT = 10000; // Never times out
+
+var IDLE_PRIORITY = maxSigned31BitInt; // Tasks are stored on a min heap
+
+var taskQueue = [];
+var timerQueue = []; // Incrementing id counter. Used to maintain insertion order.
+
+var taskIdCounter = 1; // Pausing the scheduler is useful for debugging.
+
+var isSchedulerPaused = false;
+var currentTask = null;
+var currentPriorityLevel = NormalPriority; // This is set while performing work, to prevent re-entrancy.
+
+var isPerformingWork = false;
+var isHostCallbackScheduled = false;
+var isHostTimeoutScheduled = false;
+
+function advanceTimers(currentTime) {
+  // Check for tasks that are no longer delayed and add them to the queue.
+  var timer = peek(timerQueue);
+
+  while (timer !== null) {
+    if (timer.callback === null) {
+      // Timer was cancelled.
+      pop(timerQueue);
+    } else if (timer.startTime <= currentTime) {
+      // Timer fired. Transfer to the task queue.
+      pop(timerQueue);
+      timer.sortIndex = timer.expirationTime;
+      push(taskQueue, timer);
+
+      if (enableProfiling) {
+        markTaskStart(timer, currentTime);
+        timer.isQueued = true;
+      }
+    } else {
+      // Remaining timers are pending.
+      return;
+    }
+
+    timer = peek(timerQueue);
+  }
+}
+
+function handleTimeout(currentTime) {
+  isHostTimeoutScheduled = false;
+  advanceTimers(currentTime);
+
+  if (!isHostCallbackScheduled) {
+    if (peek(taskQueue) !== null) {
+      isHostCallbackScheduled = true;
+      requestHostCallback(flushWork);
+    } else {
+      var firstTimer = peek(timerQueue);
+
+      if (firstTimer !== null) {
+        requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+      }
+    }
+  }
+}
+
+function flushWork(hasTimeRemaining, initialTime) {
+  if (enableProfiling) {
+    markSchedulerUnsuspended(initialTime);
+  } // We'll need a host callback the next time work is scheduled.
+
+
+  isHostCallbackScheduled = false;
+
+  if (isHostTimeoutScheduled) {
+    // We scheduled a timeout but it's no longer needed. Cancel it.
+    isHostTimeoutScheduled = false;
+    cancelHostTimeout();
+  }
+
+  isPerformingWork = true;
+  var previousPriorityLevel = currentPriorityLevel;
+
+  try {
+    if (enableProfiling) {
+      try {
+        return workLoop(hasTimeRemaining, initialTime);
+      } catch (error) {
+        if (currentTask !== null) {
+          var currentTime = exports.unstable_now();
+          markTaskErrored(currentTask, currentTime);
+          currentTask.isQueued = false;
+        }
+
+        throw error;
+      }
+    } else {
+      // No catch in prod codepath.
+      return workLoop(hasTimeRemaining, initialTime);
+    }
+  } finally {
+    currentTask = null;
+    currentPriorityLevel = previousPriorityLevel;
+    isPerformingWork = false;
+
+    if (enableProfiling) {
+      var _currentTime = exports.unstable_now();
+
+      markSchedulerSuspended(_currentTime);
+    }
+  }
+}
+
+function workLoop(hasTimeRemaining, initialTime) {
+  var currentTime = initialTime;
+  advanceTimers(currentTime);
+  currentTask = peek(taskQueue);
+
+  while (currentTask !== null && !(enableSchedulerDebugging && isSchedulerPaused)) {
+    if (currentTask.expirationTime > currentTime && (!hasTimeRemaining || shouldYieldToHost())) {
+      // This currentTask hasn't expired, and we've reached the deadline.
+      break;
+    }
+
+    var callback = currentTask.callback;
+
+    if (callback !== null) {
+      currentTask.callback = null;
+      currentPriorityLevel = currentTask.priorityLevel;
+      var didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
+      markTaskRun(currentTask, currentTime);
+      var continuationCallback = callback(didUserCallbackTimeout);
+      currentTime = exports.unstable_now();
+
+      if (typeof continuationCallback === 'function') {
+        currentTask.callback = continuationCallback;
+        markTaskYield(currentTask, currentTime);
+      } else {
+        if (enableProfiling) {
+          markTaskCompleted(currentTask, currentTime);
+          currentTask.isQueued = false;
+        }
+
+        if (currentTask === peek(taskQueue)) {
+          pop(taskQueue);
+        }
+      }
+
+      advanceTimers(currentTime);
+    } else {
+      pop(taskQueue);
+    }
+
+    currentTask = peek(taskQueue);
+  } // Return whether there's additional work
+
+
+  if (currentTask !== null) {
+    return true;
+  } else {
+    var firstTimer = peek(timerQueue);
+
+    if (firstTimer !== null) {
+      requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+    }
+
+    return false;
+  }
+}
+
+function unstable_runWithPriority(priorityLevel, eventHandler) {
+  switch (priorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+    case LowPriority:
+    case IdlePriority:
+      break;
+
+    default:
+      priorityLevel = NormalPriority;
+  }
+
+  var previousPriorityLevel = currentPriorityLevel;
+  currentPriorityLevel = priorityLevel;
+
+  try {
+    return eventHandler();
+  } finally {
+    currentPriorityLevel = previousPriorityLevel;
+  }
+}
+
+function unstable_next(eventHandler) {
+  var priorityLevel;
+
+  switch (currentPriorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+      // Shift down to normal priority
+      priorityLevel = NormalPriority;
+      break;
+
+    default:
+      // Anything lower than normal priority should remain at the current level.
+      priorityLevel = currentPriorityLevel;
+      break;
+  }
+
+  var previousPriorityLevel = currentPriorityLevel;
+  currentPriorityLevel = priorityLevel;
+
+  try {
+    return eventHandler();
+  } finally {
+    currentPriorityLevel = previousPriorityLevel;
+  }
+}
+
+function unstable_wrapCallback(callback) {
+  var parentPriorityLevel = currentPriorityLevel;
+  return function () {
+    // This is a fork of runWithPriority, inlined for performance.
+    var previousPriorityLevel = currentPriorityLevel;
+    currentPriorityLevel = parentPriorityLevel;
+
+    try {
+      return callback.apply(this, arguments);
+    } finally {
+      currentPriorityLevel = previousPriorityLevel;
+    }
+  };
+}
+
+function timeoutForPriorityLevel(priorityLevel) {
+  switch (priorityLevel) {
+    case ImmediatePriority:
+      return IMMEDIATE_PRIORITY_TIMEOUT;
+
+    case UserBlockingPriority:
+      return USER_BLOCKING_PRIORITY;
+
+    case IdlePriority:
+      return IDLE_PRIORITY;
+
+    case LowPriority:
+      return LOW_PRIORITY_TIMEOUT;
+
+    case NormalPriority:
+    default:
+      return NORMAL_PRIORITY_TIMEOUT;
+  }
+}
+
+function unstable_scheduleCallback(priorityLevel, callback, options) {
+  var currentTime = exports.unstable_now();
+  var startTime;
+  var timeout;
+
+  if (typeof options === 'object' && options !== null) {
+    var delay = options.delay;
+
+    if (typeof delay === 'number' && delay > 0) {
+      startTime = currentTime + delay;
+    } else {
+      startTime = currentTime;
+    }
+
+    timeout = typeof options.timeout === 'number' ? options.timeout : timeoutForPriorityLevel(priorityLevel);
+  } else {
+    timeout = timeoutForPriorityLevel(priorityLevel);
+    startTime = currentTime;
+  }
+
+  var expirationTime = startTime + timeout;
+  var newTask = {
+    id: taskIdCounter++,
+    callback: callback,
+    priorityLevel: priorityLevel,
+    startTime: startTime,
+    expirationTime: expirationTime,
+    sortIndex: -1
+  };
+
+  if (enableProfiling) {
+    newTask.isQueued = false;
+  }
+
+  if (startTime > currentTime) {
+    // This is a delayed task.
+    newTask.sortIndex = startTime;
+    push(timerQueue, newTask);
+
+    if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
+      // All tasks are delayed, and this is the task with the earliest delay.
+      if (isHostTimeoutScheduled) {
+        // Cancel an existing timeout.
+        cancelHostTimeout();
+      } else {
+        isHostTimeoutScheduled = true;
+      } // Schedule a timeout.
+
+
+      requestHostTimeout(handleTimeout, startTime - currentTime);
+    }
+  } else {
+    newTask.sortIndex = expirationTime;
+    push(taskQueue, newTask);
+
+    if (enableProfiling) {
+      markTaskStart(newTask, currentTime);
+      newTask.isQueued = true;
+    } // Schedule a host callback, if needed. If we're already performing work,
+    // wait until the next time we yield.
+
+
+    if (!isHostCallbackScheduled && !isPerformingWork) {
+      isHostCallbackScheduled = true;
+      requestHostCallback(flushWork);
+    }
+  }
+
+  return newTask;
+}
+
+function unstable_pauseExecution() {
+  isSchedulerPaused = true;
+}
+
+function unstable_continueExecution() {
+  isSchedulerPaused = false;
+
+  if (!isHostCallbackScheduled && !isPerformingWork) {
+    isHostCallbackScheduled = true;
+    requestHostCallback(flushWork);
+  }
+}
+
+function unstable_getFirstCallbackNode() {
+  return peek(taskQueue);
+}
+
+function unstable_cancelCallback(task) {
+  if (enableProfiling) {
+    if (task.isQueued) {
+      var currentTime = exports.unstable_now();
+      markTaskCanceled(task, currentTime);
+      task.isQueued = false;
+    }
+  } // Null out the callback to indicate the task has been canceled. (Can't
+  // remove from the queue because you can't remove arbitrary nodes from an
+  // array based heap, only the first one.)
+
+
+  task.callback = null;
+}
+
+function unstable_getCurrentPriorityLevel() {
+  return currentPriorityLevel;
+}
+
+function unstable_shouldYield() {
+  var currentTime = exports.unstable_now();
+  advanceTimers(currentTime);
+  var firstTask = peek(taskQueue);
+  return firstTask !== currentTask && currentTask !== null && firstTask !== null && firstTask.callback !== null && firstTask.startTime <= currentTime && firstTask.expirationTime < currentTask.expirationTime || shouldYieldToHost();
+}
+
+var unstable_requestPaint = requestPaint;
+var unstable_Profiling = enableProfiling ? {
+  startLoggingProfilingEvents: startLoggingProfilingEvents,
+  stopLoggingProfilingEvents: stopLoggingProfilingEvents,
+  sharedProfilingBuffer: sharedProfilingBuffer
+} : null;
+
+exports.unstable_ImmediatePriority = ImmediatePriority;
+exports.unstable_UserBlockingPriority = UserBlockingPriority;
+exports.unstable_NormalPriority = NormalPriority;
+exports.unstable_IdlePriority = IdlePriority;
+exports.unstable_LowPriority = LowPriority;
+exports.unstable_runWithPriority = unstable_runWithPriority;
+exports.unstable_next = unstable_next;
+exports.unstable_scheduleCallback = unstable_scheduleCallback;
+exports.unstable_cancelCallback = unstable_cancelCallback;
+exports.unstable_wrapCallback = unstable_wrapCallback;
+exports.unstable_getCurrentPriorityLevel = unstable_getCurrentPriorityLevel;
+exports.unstable_shouldYield = unstable_shouldYield;
+exports.unstable_requestPaint = unstable_requestPaint;
+exports.unstable_continueExecution = unstable_continueExecution;
+exports.unstable_pauseExecution = unstable_pauseExecution;
+exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
+exports.unstable_Profiling = unstable_Profiling;
+  })();
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/scheduler/index.js":
+/*!*****************************************!*\
+  !*** ./node_modules/scheduler/index.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (false) {} else {
+  module.exports = __webpack_require__(/*! ./cjs/scheduler.development.js */ "./node_modules/scheduler/cjs/scheduler.development.js");
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/scheduler/tracing.js":
+/*!*******************************************!*\
+  !*** ./node_modules/scheduler/tracing.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (false) {} else {
+  module.exports = __webpack_require__(/*! ./cjs/scheduler-tracing.development.js */ "./node_modules/scheduler/cjs/scheduler-tracing.development.js");
+}
+
+
+/***/ }),
+
 /***/ "./src/css/main.scss":
 /*!***************************!*\
   !*** ./src/css/main.scss ***!
@@ -33484,6 +33493,11 @@ function (_React$Component) {
       this.addHandlers();
     }
   }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      this.regionContent && this.removeHandlers();
+    }
+  }, {
     key: "bindHandlers",
     value: function bindHandlers() {
       this.addHandlers = this.addHandlers.bind(this);
@@ -33502,21 +33516,38 @@ function (_React$Component) {
       this.startInteract().then(this.isInteract).then(this.interact).then(this.stopInteract).then(this.endInteract).catch(this.addHandlers);
     }
   }, {
+    key: "removeHandlers",
+    value: function removeHandlers() {
+      var el = this.regionContent.firstChild;
+      this.stopListenStartInteract(el);
+      this.stopListenIsInteract();
+      this.offInteract();
+      this.stopListenStopInteract(el);
+      this.stopListenEndInteract(el);
+    }
+  }, {
     key: "startInteract",
     value: function startInteract() {
       var _this3 = this;
 
       return new Promise(function (resolve) {
-        var onStartInteract = function onStartInteract(e) {
-          el.removeEventListener(_this3.device.getStartEventName(), onStartInteract, false);
+        var el = _this3.regionContent.firstChild;
+
+        _this3._onStartInteract = function (e) {
+          _this3.stopListenStartInteract(el);
+
           _this3.model.startX = _this3.device.getPageX(e);
           _this3.model.startY = _this3.device.getPageY(e);
           resolve();
         };
 
-        var el = _this3.regionContent.firstChild;
-        el.addEventListener(_this3.device.getStartEventName(), onStartInteract, false);
+        el.addEventListener(_this3.device.getStartEventName(), _this3._onStartInteract, false);
       });
+    }
+  }, {
+    key: "stopListenStartInteract",
+    value: function stopListenStartInteract(el) {
+      el.removeEventListener(this.device.getStartEventName(), this._onStartInteract);
     }
   }, {
     key: "isInteract",
@@ -33524,8 +33555,8 @@ function (_React$Component) {
       var _this4 = this;
 
       return new Promise(function (resolve, reject) {
-        var onFirstMove = function onFirstMove(e) {
-          document.removeEventListener(_this4.device.getInteractEventName(), onFirstMove, false);
+        _this4._onIsInteract = function (e) {
+          _this4.stopListenIsInteract();
 
           var wayX = _this4.device.getPageX(e) - _this4.model.startX;
 
@@ -33534,8 +33565,13 @@ function (_React$Component) {
           Math.abs(wayX) > Math.abs(wayY) ? resolve() : reject();
         };
 
-        document.addEventListener(_this4.device.getInteractEventName(), onFirstMove, false);
+        document.addEventListener(_this4.device.getInteractEventName(), _this4._onIsInteract, false);
       });
+    }
+  }, {
+    key: "stopListenIsInteract",
+    value: function stopListenIsInteract() {
+      document.removeEventListener(this.device.getInteractEventName(), this._onIsInteract);
     }
   }, {
     key: "interact",
@@ -33583,7 +33619,9 @@ function (_React$Component) {
         var el = _this5.regionContent.firstChild;
 
         _this5._onStopInteract = function (e) {
-          return _this5.onStopInteract(e, resolve, reject);
+          _this5.stopListenStopInteract(el);
+
+          _this5.onStopInteract(e, resolve, reject);
         };
 
         _this5.device.getStopEventNames().forEach(function (eventName) {
@@ -33592,15 +33630,18 @@ function (_React$Component) {
       });
     }
   }, {
-    key: "onStopInteract",
-    value: function onStopInteract(e, resolve, reject) {
+    key: "stopListenStopInteract",
+    value: function stopListenStopInteract(el) {
       var _this6 = this;
 
-      var el = this.regionContent.firstChild;
-      this.offInteract();
       this.device.getStopEventNames().forEach(function (eventName) {
-        return el.removeEventListener(eventName, _this6._onStopInteract, false);
+        return el.removeEventListener(eventName, _this6._onStopInteract);
       });
+    }
+  }, {
+    key: "onStopInteract",
+    value: function onStopInteract(e, resolve, reject) {
+      this.offInteract();
       this.model.erasePrevX();
       var shift = e.currentTarget.offsetLeft;
       !shift ? reject() : resolve();
@@ -33610,23 +33651,37 @@ function (_React$Component) {
     value: function endInteract() {
       var _this7 = this;
 
-      var target = this.regionContent.firstChild;
+      var el = this.regionContent.firstChild;
       var swipePercent = this.getSwipePercent();
       var promise = new Promise(function (resolve, reject) {
+        _this7._onTransitionendDelete = function (e) {
+          _this7.stopListenEndInteract(el);
+
+          resolve(e);
+        };
+
+        _this7._onTransitionendCancel = function (e) {
+          _this7.stopListenEndInteract(el);
+
+          reject(e);
+        };
+
         if (_this7.model.isDelete(swipePercent)) {
-          target.addEventListener('transitionend', function (e) {
-            return resolve(e);
-          }, false);
-          swipePercent < 0 ? target.classList.add('js-transition-delete-left') : target.classList.add('js-transition-delete-right');
+          el.addEventListener('transitionend', _this7._onTransitionendDelete, false);
+          swipePercent < 0 ? el.classList.add('js-transition-delete-left') : el.classList.add('js-transition-delete-right');
         } else {
-          target.addEventListener('transitionend', function (e) {
-            return reject(e);
-          }, false);
-          target.classList.add('js-transition-cancel');
+          el.addEventListener('transitionend', _this7._onTransitionendCancel, false);
+          el.classList.add('js-transition-cancel');
         }
       });
       promise.then(this.onDelete, this.onCancel);
       return promise;
+    }
+  }, {
+    key: "stopListenEndInteract",
+    value: function stopListenEndInteract(el) {
+      el.addEventListener('transitionend', this._onTransitionendDelete);
+      el.addEventListener('transitionend', this._onTransitionendCancel);
     }
   }, {
     key: "getSwipePercent",
