@@ -13,7 +13,7 @@ install:
   - npm install prop-types
 
 script:
-  - npm run lint
+  #- npm run lint
   - npm run test:coverage
 
 deploy:
