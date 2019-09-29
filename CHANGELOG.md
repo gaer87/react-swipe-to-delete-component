@@ -1,3 +1,6 @@
+### v0.5.2
+* Pass custom props to "onDelete" and "onCancel" callbacks.
+
 ### v0.5.1
 * Updated Webpack from 1st to 4th version. Update Babel from 6th to 7th version. 
 * Used "@babel/preset-env" and a list of supported browsers.
