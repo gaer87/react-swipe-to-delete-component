@@ -1,3 +1,6 @@
+### v0.5.4
+* Fix a small bug
+
 ### v0.5.3
 * Fix a bug if a `<SwipeToDelete />` component is unmounted before its callbacks will be executed  
 
