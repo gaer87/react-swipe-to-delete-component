@@ -33680,8 +33680,8 @@ function (_React$Component) {
   }, {
     key: "stopListenEndInteract",
     value: function stopListenEndInteract(el) {
-      el.addEventListener('transitionend', this._onTransitionendDelete);
-      el.addEventListener('transitionend', this._onTransitionendCancel);
+      el.removeEventListener('transitionend', this._onTransitionendDelete);
+      el.removeEventListener('transitionend', this._onTransitionendCancel);
     }
   }, {
     key: "getSwipePercent",
