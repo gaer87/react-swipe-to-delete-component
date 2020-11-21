@@ -1,3 +1,6 @@
+### v0.5.5
+* Update libs and correct memory leak issue
+
 ### v0.5.4
 * Fix a small bug
 
