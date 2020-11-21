@@ -209,8 +209,9 @@ export default class SwipeToDelete extends React.Component {
   }
 
   onDelete() {
-    this.props.onDelete(this.customProps);
-    this.setState({isDeleted: true});
+    this.setState({isDeleted: true}, () => {
+      this.props.onDelete(this.customProps);
+    });
   }
 
   onCancel(e) {
