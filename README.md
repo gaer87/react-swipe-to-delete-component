@@ -31,7 +31,7 @@ const data = [
 ];
 
 const list = data.map(item => (
-  <SwipeToDelete key={item.id} item={item}>
+  <SwipeToDelete key={item.id}>
     <a className="list-group-item">
       <h4 className="list-group-item-heading">{item.date}</h4>
       <p className="list-group-item-text">{item.text}</p>

@@ -1,3 +1,6 @@
+### v0.5.7
+* Update libs
+
 ### v0.5.6
 * Use on a server - [Not working with NextJS](https://github.com/gaer87/react-swipe-to-delete-component/issues/31)
 
