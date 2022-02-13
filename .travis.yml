@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-  - "6"
+  - "10"
 
 #addons:
 #    srcclr: true
@@ -16,13 +16,13 @@ script:
   #- npm run lint
   - npm run test:coverage
 
-deploy:
-  provider: npm
-  email: "gaer87@gmail.com"
-  on:
-    tags: true
-  api_key:
-    secure: pifTXPT/BsnuecV84AkSkpP9CN7gaT0WxRHu9Lo6sYWxw/QXyX6uu5Ljrdxc6gKvAfBRPQp96JBNNNTeUhcQiM7YGz/gfhmSEnjiLOgRQ5aKiLIZIsZ5rFNgG0gk2QJAr+szI1wkUtGMbsgxXgRQX2tB1gSyEUDiDb8H3O09/wYGV1M62zJChvwguT6fLrrkNVM18EFUefbEMyfCH5AYLA7S1SLEB4lFraEtsHtJ65bgej9PeVLNMsXu3dtidCjlXHQLdfUDtvqP6JoUXoCoKwH2C7Ab9+enMZAZTgHqbrDy3uUNUcRRAqc3ojbi+wdj4V56PGY9b4+7ksPJrpvLdGsbRULwoUkVeyyhTzPM3iolHqzNllk7AZ7VMYshbVIhDt3JZB7+jFnwadoGemzqwCEOGEMzstwg5fgFKEbzxYQttDvU/fqqFFhQiB1NtuRCt3kx18KqVWHPAgm+pRU1s+YuOuuzw6VsaKJgmhdauIONyaV9+aV2NST2qUhaqxvhlTGLMxy8a0wPxVvTmw5pA6FTmn/wUK1b2b5RNOtOOCwwsGI7yRZJYhMKLuFrVNHOEwQXqdw7qGwkWbpSQmcApDvCM0Rwwsn0SBmyKFy3cdSO1/2iNA6Abc5Tu6slApJojOD9empsA/zbZ2Be7hfNjvfoN0ltDTbHMtAdjA/AzEE=
+#deploy:
+#  provider: npm
+#  email: "gaer87@gmail.com"
+#  on:
+#    tags: true
+#  api_key:
+#    secure: pifTXPT/BsnuecV84AkSkpP9CN7gaT0WxRHu9Lo6sYWxw/QXyX6uu5Ljrdxc6gKvAfBRPQp96JBNNNTeUhcQiM7YGz/gfhmSEnjiLOgRQ5aKiLIZIsZ5rFNgG0gk2QJAr+szI1wkUtGMbsgxXgRQX2tB1gSyEUDiDb8H3O09/wYGV1M62zJChvwguT6fLrrkNVM18EFUefbEMyfCH5AYLA7S1SLEB4lFraEtsHtJ65bgej9PeVLNMsXu3dtidCjlXHQLdfUDtvqP6JoUXoCoKwH2C7Ab9+enMZAZTgHqbrDy3uUNUcRRAqc3ojbi+wdj4V56PGY9b4+7ksPJrpvLdGsbRULwoUkVeyyhTzPM3iolHqzNllk7AZ7VMYshbVIhDt3JZB7+jFnwadoGemzqwCEOGEMzstwg5fgFKEbzxYQttDvU/fqqFFhQiB1NtuRCt3kx18KqVWHPAgm+pRU1s+YuOuuzw6VsaKJgmhdauIONyaV9+aV2NST2qUhaqxvhlTGLMxy8a0wPxVvTmw5pA6FTmn/wUK1b2b5RNOtOOCwwsGI7yRZJYhMKLuFrVNHOEwQXqdw7qGwkWbpSQmcApDvCM0Rwwsn0SBmyKFy3cdSO1/2iNA6Abc5Tu6slApJojOD9empsA/zbZ2Be7hfNjvfoN0ltDTbHMtAdjA/AzEE=
 
 after_script:
   - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
