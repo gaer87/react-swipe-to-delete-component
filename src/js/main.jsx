@@ -14,7 +14,6 @@ export default class SwipeToDelete extends React.Component {
     this.state = {isDeleted: false};
 
     this.model = new Model({deleteSwipe: this.props.deleteSwipe});
-    this.device = Device.factory(isMobile.any());
 
     this.bindHandlers();
   }
@@ -35,6 +34,7 @@ export default class SwipeToDelete extends React.Component {
   }
 
   componentDidMount() {
+    this.device = Device.factory(isMobile.any());
     this.addHandlers();
   }
 
@@ -209,9 +209,8 @@ export default class SwipeToDelete extends React.Component {
   }
 
   onDelete() {
-    this.setState({isDeleted: true}, () => {
-      this.props.onDelete(this.customProps);
-    });
+    this.props.onDelete(this.customProps);
+    this.setState({isDeleted: true});
   }
 
   onCancel(e) {

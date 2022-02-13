@@ -10,9 +10,10 @@ const config = {
 
   output: {
     path: path.resolve(__dirname, 'dist'),
+    filename: 'swipe-to-delete.min.js',
     library: '[name]',
     libraryTarget: 'umd',
-    filename: 'swipe-to-delete.min.js',
+    globalObject: 'this'
   },
 
   resolve: {

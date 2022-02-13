@@ -8,9 +8,8 @@ A simple React component implement 'swipe to delete' UI-pattern.
 ## Install
 React-swipe-to-delete-component is available via [npm](https://www.npmjs.com/package/react-swipe-to-delete-component).
 ```
-npm install --save react-swipe-to-delete-component
+npm install react-swipe-to-delete-component
 ```
-Else you can download the latest builds directly from the "dist" folder above.
 
 ## Usage
 The React-swipe-to-delete-component wrap your a content component. It's become swiped. If it's swiped more certain percent than the swipe-to-delete-component will remove a component.
@@ -22,11 +21,13 @@ import React from 'react';
 import { render } from 'react-dom';
 // Import the react-swipe-to-delete-component
 import SwipeToDelete from 'react-swipe-to-delete-component';
+// Import styles of the react-swipe-to-delete-component
+import 'react-swipe-to-delete-component/dist/swipe-to-delete.css';
 
 const data = [
   {id: 1, text: 'End of summer reading list', date: '1.03.2016'},
   {id: 2, text: 'Somewhere in the middle 📸', date: '23.01.2017'},
-  {id: 3, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2019'}
+  {id: 3, text: 'Good morning to 9M of you?!?! ❤️🙏🏻Feeling very grateful and giddy.', date: '12.01.2022'}
 ];
 
 const list = data.map(item => (
@@ -57,7 +58,7 @@ render(app, document.getElementById('root'));
 - **onRight/onLeft** - This is a function. If a content component is swiped then these functions is called. *Optional*.
 
 ### Styles
-You may set up styles in "swipe-to-delete.css" under the comment "Custom styles". The class *js-content* is content region, *js-delete* is delete region. Classes *js-transition-delete-right* and *js-transition-delete-left* are added on a content component when it's swiped more than "deleteSwipe" options. Class *js-transition-cancel* is added when a content component swiped less than "deleteSwipe" options. Animations are made by CSS3 transition.
+The class *js-content* is content region, *js-delete* is delete region. Classes *js-transition-delete-right* and *js-transition-delete-left* are added on a content component when it's swiped more than "deleteSwipe" options. Class *js-transition-cancel* is added when a content component swiped less than "deleteSwipe" options. Animations are made by CSS3 transition.
 
 ## Changes
 See the [CHANGELOG](CHANGELOG.md).
