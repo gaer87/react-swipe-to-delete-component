@@ -2,11 +2,7 @@
 
 name: CI
 
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: push
 
 jobs:
   code-coverage:
@@ -25,9 +21,14 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm install
-      - run: npm install react
-      - run: npm install react-dom
-      - run: npm install prop-types
-      - run: npm run test:coverage
-      - run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+      - name: npm install, make test-coverage
+        run: |
+          npm install
+          npm install react
+          npm install react-dom
+          npm install prop-types
+          npm run test:coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
