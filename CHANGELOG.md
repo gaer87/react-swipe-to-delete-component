@@ -1,3 +1,7 @@
+### v1.0.0
+* Add some tests
+* Update README
+
 ### v0.5.7
 * Update libs
 
