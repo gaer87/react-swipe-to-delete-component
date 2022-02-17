@@ -117,6 +117,20 @@ describe('A SwipeToDelete', () => {
 
       expect(onLeft).toBeCalled();
     });
+
+    it('should not call "onRight()" and "onLeft()" then an user do not swipe content', () => {
+      const onRight = jest.fn();
+      const onLeft = jest.fn();
+      const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete onRight={onRight} onLeft={onLeft}><div className="content">Content ...</div></SwipeToDelete>);
+
+      const pageX = 0;
+      const e = {pageX};
+
+      component.callMoveCB(e);
+
+      expect(onRight).not.toBeCalled();
+      expect(onLeft).not.toBeCalled();
+    });
   });
 
   it('should call "onStopInteract()" when user stop interacting', () => {
@@ -340,6 +354,30 @@ describe('A SwipeToDelete', () => {
       content = ReactTestUtils.findRenderedDOMComponentWithClass(component, 'content');
       expect(content.classList.contains('js-transition-cancel')).toBe(false);
     });
+  });
+
+
+  it('should remove handlers when it is unmounted', () => {
+    const component = ReactTestUtils.renderIntoDocument(<SwipeToDelete><div className="content">Content ...</div></SwipeToDelete>);
+
+    const spy = jest.spyOn(component, 'removeHandlers');
+
+    component.componentWillUnmount();
+    expect(spy).toHaveBeenCalled()
+  });
+
+
+  it('should throw an error when "deleteSwipe" is not number', () => {
+    const test = () => SwipeToDelete.propTypes.deleteSwipe({ deleteSwipe: 'test' }, 'deleteSwipe', 'Dev');
+    expect(test).toThrow();
+  });
+
+  it('should throw an error when "deleteSwipe" is not in [0, 1]', () => {
+    const testRightRange = () => SwipeToDelete.propTypes.deleteSwipe({ deleteSwipe: 1.1 }, 'deleteSwipe', 'Dev');
+    expect(testRightRange).toThrow();
+
+    const testLeft = () => SwipeToDelete.propTypes.deleteSwipe({ deleteSwipe: -0.1 }, 'deleteSwipe', 'Dev');
+    expect(testLeft).toThrow();
   });
 });
 

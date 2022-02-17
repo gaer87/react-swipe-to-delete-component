@@ -260,11 +260,11 @@ SwipeToDelete.propTypes = {
     }
 
     if (typeof val !== 'number') {
-      return new Error(`Invalid prop "deleteSwipe" in ${componentName}: can be number only.`);
+      throw new Error(`Invalid prop "deleteSwipe" in ${componentName}: can be number only.`);
     }
 
     if (val < 0 || val > 1) {
-      return new Error(`Invalid prop "deleteSwipe" in ${componentName}: can be in range [0, 1].`);
+      throw new Error(`Invalid prop "deleteSwipe" in ${componentName}: can be in range [0, 1].`);
     }
   }
 };
