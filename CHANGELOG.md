@@ -1,3 +1,7 @@
+### v1.0.1
+* Add CI
+* Update Bumps [url-parse](https://github.com/unshiftio/url-parse) from 1.5.5 to 1.5.7
+
 ### v1.0.0
 * Add some tests
 * Update README
