@@ -1,3 +1,6 @@
+### v1.0.6
+* Fix dependencies in CD
+
 ### v1.0.5
 * Add CI
 * Update Bumps [url-parse](https://github.com/unshiftio/url-parse) from 1.5.5 to 1.5.7

@@ -17,9 +17,7 @@ jobs:
       - name: npm install, build
         run: |
           npm install
-          npm install react
-          npm install react-dom
-          npm install prop-types
+          npm install react react-dom prop-types --no-save
           npm run test:ci
           npm run build
       - run: npm publish
