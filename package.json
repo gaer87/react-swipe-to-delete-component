@@ -9,6 +9,7 @@
     "build": "gulp",
     "build:example": "webpack --config ./example/webpack.config.js",
     "test": "jest --watch",
+    "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
     "lint": "eslint ./src/js/* ./__tests__/*"
   },

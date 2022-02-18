@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 10
+          registry-url: 'https://registry.npmjs.org'
+      - name: npm install, build
+        run: |
+          npm install
+          npm install react
+          npm install react-dom
+          npm install prop-types
+          npm run test:ci
+          npm run build
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
