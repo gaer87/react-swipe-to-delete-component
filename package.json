@@ -33,7 +33,7 @@
   },
   "github": "https://github.com/gaer87/react-swipe-to-delete-component",
   "engines": {
-    "node": "^10.0.0"
+    "node": "^16.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.7",
@@ -55,11 +55,11 @@
     "gulp-util": "^3.0.8",
     "jest": "^24.8.0",
     "mini-css-extract-plugin": "^0.6.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^6.0.1",
     "path": "^0.12.7",
     "raf": "^3.4.0",
-    "react-test-renderer": "^16.14.0",
-    "sass-loader": "^7.1.0",
+    "react-test-renderer": "^17.0.2",
+    "sass-loader": "^10.2.1",
     "style-loader": "^0.23.1",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
@@ -70,9 +70,9 @@
     "@babel/runtime": "^7.12.5"
   },
   "peerDependencies": {
+    "prop-types": "^15.8.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "prop-types": "^15.8.1"
+    "react-dom": "^17.0.2"
   },
   "jest": {
     "moduleNameMapper": {

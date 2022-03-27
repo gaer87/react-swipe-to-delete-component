@@ -1,3 +1,6 @@
+### v1.0.7
+* Update a Node version - [Bump node version](https://github.com/gaer87/react-swipe-to-delete-component/issues/48)
+
 ### v1.0.6
 * Fix dependencies in CD
 
