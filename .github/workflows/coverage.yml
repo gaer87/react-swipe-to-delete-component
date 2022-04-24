@@ -21,9 +21,7 @@ jobs:
       - name: npm install, make test-coverage
         run: |
           npm install
-          npm install react
-          npm install react-dom
-          npm install prop-types
+          npm install react@17 react-dom@17 prop-types@15 --no-save
           npm run test:coverage
       - name: Coveralls
         uses: coverallsapp/github-action@master
