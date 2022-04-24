@@ -1,3 +1,6 @@
+### v1.0.8
+* Update Bumps [url-parse](hhttps://github.com/gaer87/react-swipe-to-delete-component/pull/47) from 1.5.7 to 1.5.10
+
 ### v1.0.7
 * Update a Node version - [Bump node version](https://github.com/gaer87/react-swipe-to-delete-component/issues/48)
 
