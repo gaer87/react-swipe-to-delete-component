@@ -1,4 +1,4 @@
-# React-swipe-to-delete-component
+# [DEPRECATED] React-swipe-to-delete-component
  [![Code Climate](https://codeclimate.com/github/gaer87/react-swipe-to-delete-component/badges/gpa.svg)](https://codeclimate.com/github/gaer87/react-swipe-to-delete-component)
  [![Coverage Status](https://coveralls.io/repos/github/gaer87/react-swipe-to-delete-component/badge.svg?branch=master)](https://coveralls.io/github/gaer87/react-swipe-to-delete-component?branch=master)
 
